@@ -6,10 +6,21 @@ if (NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
 endif()
 
+find_package(glfw3 3.2 REQUIRED)
+find_package(OpenGL REQUIRED)
+if (OPENGL_FOUND)
+    message("opengl found")
+    message("include dir: ${OPENGL_INCLUDE_DIR}")
+    message("link libraries: ${OPENGL_gl_LIBRARY}")
+else (OPENGL_FOUND)
+    message("opengl not found")
+endif()
+
 option(BUILD_STATIC "Build a static library" OFF)
 
 
-include_directories(include)
+include_directories(include ${OPENGL_INCLUDE_DIR})
+
 
 # Require C++11 support, prefer ISO C++ over GNU variants,
 # as relying solely on ISO C++ is more portable.

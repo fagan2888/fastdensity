@@ -6,6 +6,9 @@ add_library (fastdensity
 
 add_executable (main main.cpp)
 target_link_libraries (main fastdensity)
+target_link_libraries(main ${OPENGL_gl_LIBRARY} glfw)
+target_link_libraries(main ${OPENGL_glu_LIBRARY})
+
 add_executable (amalgamation_demo amalgamation_demo.cpp)
 target_link_libraries (amalgamation_demo fastdensity)
 
