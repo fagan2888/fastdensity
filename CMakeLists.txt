@@ -16,6 +16,18 @@ else (OPENGL_FOUND)
     message("opengl not found")
 endif()
 
+find_package(GLEW REQUIRED)
+if (GLEW_FOUND)
+    include_directories(${GLEW_INCLUDE_DIRS})
+    link_libraries(${GLEW_LIBRARIES})
+endif()
+
+find_package( OpenCV REQUIRED )
+if (OpenCV_FOUND)
+    include_directories(${OpenCV_INCLUDE_DIRS})
+    link_libraries(${OpenCV_LIBS})
+endif()
+
 option(BUILD_STATIC "Build a static library" OFF)
 
 
