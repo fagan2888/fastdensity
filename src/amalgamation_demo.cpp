@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include "roaring.hh"
-#include "roaring.c"
+
 int main() {
   Roaring r1;
   for (uint32_t i = 100; i < 1000; i++) {
@@ -17,4 +17,3 @@ int main() {
   std::cout << "cardinality = " << r2.cardinality() << std::endl;
   return 0;
 }
-
