@@ -21,6 +21,12 @@ target_link_libraries(amalgamation_demo fastdensity)
 target_link_libraries(amalgamation_demo roaring)
 
 add_executable(remimaps remimaps.cpp)
+add_custom_command(
+        TARGET remimaps POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_SOURCE_DIR}/src/remimaps.fs
+                ${CMAKE_SOURCE_DIR}/src/remimaps.vs
+                ${CMAKE_CURRENT_BINARY_DIR}/)
 target_link_libraries (remimaps fastdensity)
 target_link_libraries (remimaps roaring)
 target_link_libraries (remimaps ${OPENGL_gl_LIBRARY})
