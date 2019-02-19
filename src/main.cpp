@@ -34,7 +34,7 @@ static string return_current_time_and_date_as_string() {
 	auto in_time_t = std::chrono::system_clock::to_time_t(now);
 
 	string s(30, '\0');
-	strftime(&s[0], s.size(), "%Y-%m-%d-%H:%M:%S", localtime(&in_time_t));
+	strftime(&s[0], s.size(), "%Y-%m-%d_%Hh%Mm%Ss", localtime(&in_time_t));
 	s.erase(remove(s.begin(), s.end(), '\0'), s.end());
 	cout << s << endl;
 	return s;
@@ -127,7 +127,7 @@ static void TODO_fun(vector<T>tab) {
  *		stddev ; the standard deviation that'll follow the distribution (for generation2)
  */
 
-static void add_Benchmark(string name, int n, int seed, double stddev, int width = -1, int height = -1)
+static void add_Benchmark(string filename, string name, int n, int seed, double stddev, int width = -1, int height = -1)
 {
 	vector<int> point_Array;
 
@@ -145,9 +145,9 @@ static void add_Benchmark(string name, int n, int seed, double stddev, int width
 	auto elapsed_time = chrono::duration <double, nano> (diff).count();
 
 	/* getting the date for naming the file */
-	string filename = return_current_time_and_date_as_string();
-	filename = "bench_"+filename + ".csv";
-	cout << filename << endl;
+	/*string filename = return_current_time_and_date_as_string();
+	filename = "bench_"+filename+".csv";
+	cout << filename << endl;*/
 
 	ofstream file_pointer;
 	/* opens an existing csv file or creates a new file. Every output operation will be push at the end of file.
@@ -167,6 +167,7 @@ static void add_Benchmark(string name, int n, int seed, double stddev, int width
 		file_pointer << name << ", " << n << ", " << seed << ", " << stddev << ", " << "not used" << ", " << "not used" << ", " << "generation2" << ", " << elapsed_time << "\n";
 	}
 
+	file_pointer.close();
 }
 
 int main() {
@@ -196,11 +197,22 @@ int main() {
   int stddev = 0;
   cout << "standard deviation for the normal distribution :" << endl;
   cin >> stddev;
+  string bench_name;
+  cout << "name for the benchmark :" << endl;
+  cin >> bench_name;
 
   /*vector<int> temp1 = generation_1(window_width, window_height, points_nb, seed, display);
   vector<int> temp2 = generation_2(stddev, points_nb, seed, display);*/
 
-  add_Benchmark("test", points_nb, seed, stddev);
+  /* getting the date for naming the file */
+  stringstream ss;
+  ss << "bench_" << return_current_time_and_date_as_string() << ".csv";
+  string filename = ss.str();
+
+  for (int i = 0; i <= 15; i++) {
+	add_Benchmark(filename,bench_name+to_string(i), points_nb+i*10, seed, stddev);
+  }
+  
 
   /*auto start = chrono::steady_clock::now();
   ff.add(3, x, y);
