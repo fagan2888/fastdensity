@@ -1,4 +1,4 @@
-#version 410 core
+#version 330 core
 
 //Entrees
 layout(location = 0) in vec2 vertexPosition;
