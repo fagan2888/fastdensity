@@ -142,12 +142,7 @@ static void add_Benchmark(string filename, string name, int n, int seed, double 
 	TODO_fun(point_Array);
 	auto end = chrono::steady_clock::now();
 	auto diff = end - start;
-	auto elapsed_time = chrono::duration <double, nano> (diff).count();
-
-	/* getting the date for naming the file */
-	/*string filename = return_current_time_and_date_as_string();
-	filename = "bench_"+filename+".csv";
-	cout << filename << endl;*/
+	auto elapsed_time = chrono::duration <double, nano> (diff).count(
 
 	ofstream file_pointer;
 	/* opens an existing csv file or creates a new file. Every output operation will be push at the end of file.
