@@ -2,7 +2,7 @@
 Density maps as fast as possible
 
 ## Getting started
-these instructions will help you get a copy of the project, and make it run on your local machine for developpement and testing purpose. 
+	these instructions will help you get a copy of the project, and make it run on your local machine for developpement and testing purpose. 
 Please consult the licence of this project before.
 
 ### Prerequisites
@@ -55,4 +55,4 @@ A step by step series of instructions that tell you how to get a development env
 * Frederic Vernier ( [Homepage](http://vernier.frederic.free.fr/) ) - Lecturer (Professor Assistant) teaching at [South-Paris University]() and researcher (at [LIMSI](https://www.limsi.fr/en/)) teaching at South-Paris University
 
 ## Licence :
-This project is licensed under the MIT License - see the [LICENSE](../fastdensity/LICENCE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](./LICENCE) file for details.
