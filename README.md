@@ -2,7 +2,7 @@
 Density maps as fast as possible
 
 ## Getting started
-	these instructions will help you get a copy of the project, and make it run on your local machine for developpement and testing purpose. 
+these instructions will help you get a copy of the project, and make it run on your local machine for developpement and testing purpose. 
 Please consult the licence of this project before.
 
 ### Prerequisites
