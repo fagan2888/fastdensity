@@ -52,7 +52,8 @@ A step by step series of instructions that tell you how to get a development env
 
 ##Autors
 * Jean-Daniel Fekete ( [Homepage](https://www.aviz.fr/~fekete/) )- Leader of the [INRIA](https://www.inria.fr/) Project Team [AVIZ](https://www.aviz.fr/)
-* Frederic Vernier ( [Homepage](http://vernier.frederic.free.fr/) ) - Lecturer (Professor Assistant) teaching at [South-Paris University]() and researcher (at [LIMSI](https://www.limsi.fr/en/)) teaching at South-Paris University
+* Frederic Vernier ( [Homepage](http://vernier.frederic.free.fr/) ) - Lecturer (Professor Assistant) teaching at [South-Paris University](http://www.u-psud.fr/fr/index.html) and researcher (at [LIMSI](https://www.limsi.fr/en/)) teaching at South-Paris University
+* Rémi Bardes - Master student in computer science at [South-Paris University](http://www.u-psud.fr/fr/index.html)
 
 ## Licence :
-This project is licensed under the MIT License - see the [LICENSE](./master/LICENCE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
