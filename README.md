@@ -2,7 +2,7 @@
 Density maps as fast as possible
 
 ## Getting started
-these instructions will help you get a copy of the project, and make it run on your local machine for developpement and testing purpose. 
+	these instructions will help you get a copy of the project, and make it run on your local machine for developpement and testing purpose. 
 Please consult the licence of this project before.
 
 ### Prerequisites
@@ -11,29 +11,28 @@ What things you need for install the software, and where to find them, with some
 #### With Linux/Mac OS :
 **_NEED TO BE CONFIRMED_**
 (with those OS the package manager inside should manage alone the link between all the files needed)
-```
+
 other softs :
- * [Cmake](https://cmake.org/)
- * G++ : C++11 required
+* [Cmake](https://cmake.org/)
+* G++ : C++11 required
 
 librairies (just install them using the package manager of your OS):
- * [GLEW](http://glew.sourceforge.net/)
- * [GLFW](https://www.glfw.org/)
- * [openCV](https://opencv.org/)
- ```
+* [GLEW](http://glew.sourceforge.net/)
+* [GLFW](https://www.glfw.org/)
+* [openCV](https://opencv.org/)
+ 
 
 #### With Windows OS :
 (working with windows may be slightly more complexe. Since there is no package manager include in the OS)
-```
+
 other softs :
- * [Cmake](https://cmake.org/)
- * G++ : C++11 required (I recommand using [Microsoft Visual Studio](https://visualstudio.microsoft.com/fr/) which provide G++ and got high compatibility with Cmake)
+* [Cmake](https://cmake.org/)
+* G++ : C++11 required (I recommand using [Microsoft Visual Studio](https://visualstudio.microsoft.com/fr/) which provide G++ and got high compatibility with Cmake)
 
 librairies (just install them using the package manager of your OS):
- * [GLEW](http://glew.sourceforge.net/)
- * [GLFW](https://www.glfw.org/)
- * [openCV](https://opencv.org/)
- ```
+* [GLEW](http://glew.sourceforge.net/)
+* [GLFW](https://www.glfw.org/)
+* [openCV](https://opencv.org/)
 
 ### Installing
 A step by step series of instructions that tell you how to get a development environnement running.
@@ -50,3 +49,10 @@ A step by step series of instructions that tell you how to get a development env
 		(don't worry, if you're using the GUI we showed it up)
  5. build the programme, then before launching it, in "../build/src/release" copy all the .lib and .dll files from the libraries previously installed, and remimaps.vs & remimaps.fs.
  6. Execute the programme. a .csv called "bench_YYYY-MM-DD_HH-MM-SS" file should have been generated in "../build/src", this file is the result of the run.
+
+##Autors
+* Jean-Daniel Fekete ( [Homepage](https://www.aviz.fr/~fekete/) )- Leader of the [INRIA](https://www.inria.fr/) Project Team [AVIZ](https://www.aviz.fr/)
+* Frederic Vernier ( [Homepage](http://vernier.frederic.free.fr/) ) - Lecturer (Professor Assistant) teaching at [South-Paris University]() and researcher (at [LIMSI](https://www.limsi.fr/en/)) teaching at South-Paris University
+
+## Licence :
+This project is licensed under the MIT License - see the [LICENSE](LICENCE) file for details.
