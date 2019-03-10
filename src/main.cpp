@@ -151,7 +151,7 @@ static void add_Benchmark(string filename, string name, int n, int seed, double 
 	TODO_fun(point_Array);
 	auto end = chrono::steady_clock::now();
 	auto diff = end - start;
-	auto elapsed_time = chrono::duration <double, nano>(diff).count();
+	auto elapsed_time = chrono::duration <double, nano> (diff).count();
 
 	ofstream file_pointer;
 	/* opens an existing csv file or creates a new file. Every output operation will be push at the end of file.
