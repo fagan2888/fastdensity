@@ -23,7 +23,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-/*	Generation_1 :
+/*	return_current_time_and_date_as_string :
  *		Create a string representativ of the date and time
  *  @return :
  *		A string with shape "YYYY-MM-DD-HH:MM:SS"
@@ -56,7 +56,7 @@ static vector<int> generation_1(unsigned int width, unsigned int height, unsigne
 	srand(seed); //seed of the rng && should reset the seed at it's starting point.
 
 	/* array generation */
-	for (int i = 0; i < n*2; i += 2) {
+	for (int i = 0; i < n; i++) {
 		point_Array.push_back(rand()%(width+1));
 		point_Array.push_back(rand()%(height+1));
 	}
@@ -90,7 +90,7 @@ static vector<int> generation_2(double stddev, unsigned int n, int seed, bool di
 	vector<int> point_Array;
 
 	/* array generation */
-	for (int i = 0; i < n * 2; i += 2) {
+	for (int i = 0; i < n; i++) {
 		point_Array.push_back(ceil(distribution(generator)));
 		point_Array.push_back(ceil(distribution(generator)));
 	}
@@ -121,6 +121,52 @@ static void TODO_fun(vector<T>tab) {
 
 }
 
+/*
+DEBUUG FUNCTION
+display a 2 dimensional array given as param on the standard output
+*/
+template< typename T >
+static void display_2Darray(vector<vector<T>> tab) {
+
+	cout << endl;
+
+	for (int i = 0; i < tab.size(); i++) {
+		for (int j = 0; j < tab[i].size(); j++) {
+			cout << tab[i][j] << " | ";
+		}
+		cout << endl;
+	}
+}
+
+/*
+ * Compute_densityMap_CPU_1Tab :
+ * @params :
+ *	tab : A 1 dimensional array of number, with all the even indexes are the x value of the point and all the odd indexes are the y value of it
+ *  maxX, maxY, minX, minY : the  global extremums of the tab array
+ *  mapSize : the size of density map wanted, (if 256 then the density map will generated will be 256^2
+ * @return :
+ *	the densityMap
+ */
+template< typename T >
+vector<vector<int>> compute_densityMap_CPU_simple_1Tab(vector<T>tab, T maxX, T minX, T maxY, T minY, int mapSize) {
+	vector<vector<int>> densityMap(mapSize, vector<int>(mapSize));
+	T Xrange = maxX - minX;
+	T Yrange = maxY - minY;
+	cout << "( " << maxX << " , " << minX << " )" << " ==> " << Xrange << " , " << "( " << maxY << " , " << minY << " )" << " ==> " << Yrange <<  endl;
+	double tempX, tempY;
+	cout << "before forloop of compute density" << endl;
+	for (int i = 0; i < tab.size(); i+=2) {
+		tab[i] = tab[i] + minX * (-1);
+		tab[i + 1] = tab[i + 1] + minX * (-1);
+		tempX = round(((double)tab[i] / (double)Xrange) * (mapSize-1));
+		tempY = round(((double)tab[i+1] /(double)Yrange) * (mapSize-1));
+		//cout << "( " << tempX << " , " << tempY << " )" << endl;
+		densityMap[tempX][tempY]++;
+	}
+	return densityMap;
+}
+
+
 /*	@temporary
  *  add_Benchmark :
  *		Create an entry in a CSV file that contain the whole information about the execution of a Benchmark
@@ -136,23 +182,8 @@ static void TODO_fun(vector<T>tab) {
  *		stddev ; the standard deviation that'll follow the distribution (for generation2)
  */
 
-static void add_Benchmark(string filename, string name, int n, int seed, double stddev, int width = -1, int height = -1)
+static void add_Benchmark(string filename, int n, int seed, double stddev, int number, int width = -1, int height = -1)
 {
-	vector<int> point_Array;
-
-	if (width == -1 && height == -1) {
-		point_Array = generation_2(stddev, n, seed);
-	}
-	else {
-		point_Array = generation_1(width, height, n, seed);
-	}
-
-	auto start = chrono::steady_clock::now();
-	TODO_fun(point_Array);
-	auto end = chrono::steady_clock::now();
-	auto diff = end - start;
-	auto elapsed_time = chrono::duration <double, nano> (diff).count();
-
 	ofstream file_pointer;
 	/* opens an existing csv file or creates a new file. Every output operation will be push at the end of file.
 		flag out : Open for output operations.
@@ -161,15 +192,55 @@ static void add_Benchmark(string filename, string name, int n, int seed, double 
 	file_pointer.open(filename, ios::out | ios::app);
 	if (!file_pointer)
 	{
-		cout << "Error in creating file!!! " << filename <<endl;
+		cout << "Error in creating file!!! " << filename << endl;
 	}
-	//Insert data to file filename
-	if (width == -1 && height == -1) {
-		file_pointer << (string)name << ", " << n << ", " << seed << ", " << stddev << ", " << "not used" << ", " << "not used" << ", " << "generation2" << ", " << elapsed_time << "\n";
+	file_pointer << "Benchmark Name, number of points, seed used, stddev, width, height, generation used, densityMap size, elapsed_time (ns), \n";
+
+	auto totalTime = 0;
+	vector<int> point_Array;
+	string generation = "";
+	int dSize = 256;
+
+	for (int nb = 0; nb < number; nb++) {
+		int maxY = -10000, maxX = -10000, minY = 10000, minX = 10000;
+		if (width == -1 && height == -1) {
+			point_Array = generation_2(stddev, n, seed);
+			generation = "2";
+		}
+		else {
+			point_Array = generation_1(width, height, n, seed);
+			generation = "1";
+		}
+
+		//determining the min X & Y, the max X & Y
+		for (int i = 0; i < n * 2; i += 2) {
+			if (point_Array[i] < minX) { minX = point_Array[i]; }
+			else if (point_Array[i] > maxX) { maxX = point_Array[i]; }
+			if (point_Array[i + 1] < minY) { minY = point_Array[i + 1]; }
+			else if (point_Array[i + 1] > maxY) { maxY = point_Array[i + 1]; }
+		}
+
+		auto start = chrono::steady_clock::now();
+
+		//HERE the functions to be evaluated
+		vector<vector<int>> densityMap1 = compute_densityMap_CPU_simple_1Tab(point_Array, maxX, minX, maxY, minY, dSize);
+
+		auto end = chrono::steady_clock::now();
+		auto diff = end - start;
+		auto elapsed_time = chrono::duration <double, nano>(diff).count();
+
+		totalTime += elapsed_time;
+		//uncomment this if you want to display the generated density map on the shell
+		//display_2Darray(densityMap1);
+
+		//Insert data to file filename
+		cout << "CPU_densityMap" << to_string(nb) << ", " << n << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << dSize << ", " << elapsed_time << endl;
+		file_pointer << "CPU_densityMap" << to_string(nb) << ", " << n << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << dSize << ", " << elapsed_time << "\n";
 	}
-	else {
-		file_pointer << name << ", " << n << ", " << seed << ", " << stddev << ", " << "not used" << ", " << "not used" << ", " << "generation2" << ", " << elapsed_time << "\n";
-	}
+	totalTime = totalTime / number;
+
+	cout << "CPU_densityMap_Mean_On_" << to_string(number) << ", " << n << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << dSize << ", " << totalTime << endl;
+	file_pointer << "CPU_densityMap_Mean_On_" << to_string(number) << ", " << n << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << dSize << ", " << totalTime << "\n";
 
 	file_pointer.close();
 }
@@ -202,8 +273,6 @@ int main() {
   cout << "standard deviation for the normal distribution :" << endl;
   cin >> stddev;
   string bench_name;
-  cout << "name for the benchmark :" << endl;
-  cin >> bench_name;
 
   /*vector<int> temp1 = generation_1(window_width, window_height, points_nb, seed, display);
   vector<int> temp2 = generation_2(stddev, points_nb, seed, display);*/
@@ -213,9 +282,7 @@ int main() {
   ss << "bench_" << return_current_time_and_date_as_string() << ".csv";
   string filename = ss.str();
 
-  for (int i = 0; i <= 15; i++) {
-	add_Benchmark(filename,bench_name+to_string(i), points_nb+i*10, seed, stddev);
-  }
+  add_Benchmark(filename, points_nb, seed, stddev, 25);
   
 
   /*auto start = chrono::steady_clock::now();
