@@ -106,6 +106,15 @@ static vector<int> generation_2(double stddev, unsigned int n, int seed, bool di
 
 /*
  * For the moment this is an empty function, will change in future
+ * Faire : Une fonction qui prend soit 1 tableaux de points, soit 2 tableaux (1 de x et 1 de y).
+ * et qui génère la density map de ce(s) tableau(x).
+ * Etapes :
+ * - Récupération de 1 millions de points (ou plus)
+ * - linéarisation de ces points :
+ *		exemple :
+ *			On à nos 1M de points qui vont entre 0 et 1500, notre density Map est de 256 par 256. On ramène donc notre échelle de 0 à 1500 à une échelle de 0 à 256.
+ * - Une fois linéarisé, charger les points dans la density map.
+ * C'est le temps d'update de la density map qui nous interesse.
  */
 template< typename T >
 static void TODO_fun(vector<T>tab) {
