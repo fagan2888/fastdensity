@@ -270,7 +270,10 @@ static void add_Benchmark(string filename, unsigned int n, int seed, double stdd
 
 	for (unsigned int nb = 0; nb < number; nb++) {
 		int maxY = -10000, maxX = -10000, minY = 10000, minX = 10000;
-		/* Changing the seed for every loop, used for refreshing cas*/
+		/* Changing the seed for every loop, used for forcing new data on cache.
+			I choose this way of changing the seed for keeping the same seed for future calcul process.
+			Will probably need a preload of every points on the cache for equalise the calcul process.
+		*/
 		seed = seed + nb;
 		if (width == -1 && height == -1) {
 			point_Array = generation_2(stddev, n, seed);
