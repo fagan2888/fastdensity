@@ -139,7 +139,7 @@ static void display_2Darray(vector<vector<T>> tab) {
 }
 
 /*
- * Compute_densityMap_CPU_1Tab :
+ * Compute_densityMap_CPU_simple_1Tab :
  * @params :
  *	tab : A 1 dimensional array of number, with all the even indexes are the x value of the point and all the odd indexes are the y value of it
  *  maxX, maxY, minX, minY : the  global extremums of the tab array
@@ -154,10 +154,10 @@ vector<vector<int>> compute_densityMap_CPU_simple_1Tab(vector<T>tab, T maxX, T m
 	T Yrange = maxY - minY;
 	cout << "( " << maxX << " , " << minX << " )" << " ==> " << Xrange << " , " << "( " << maxY << " , " << minY << " )" << " ==> " << Yrange <<  endl;
 	double tempX, tempY;
-	cout << "before forloop of compute density" << endl;
+	//cout << "before forloop of compute density" << endl;
 	for (int i = 0; i < tab.size(); i+=2) {
 		tab[i] = tab[i] + minX * (-1);
-		tab[i + 1] = tab[i + 1] + minX * (-1);
+		tab[i + 1] = tab[i + 1] + minY * (-1);
 		tempX = round(((double)tab[i] / (double)Xrange) * (mapSize-1));
 		tempY = round(((double)tab[i+1] /(double)Yrange) * (mapSize-1));
 		//cout << "( " << tempX << " , " << tempY << " )" << endl;
@@ -166,6 +166,34 @@ vector<vector<int>> compute_densityMap_CPU_simple_1Tab(vector<T>tab, T maxX, T m
 	return densityMap;
 }
 
+/*
+ * Compute_densityMap_CPU_simple_2Tabs :
+ * @params :
+ *	tabX : A 1 dimensional array of number containing all the X axis values for points
+ *  tabY : A 1 dimensional array of number containing all the Y axis values for points
+ *  maxX, maxY, minX, minY : the  global extremums of the tab array
+ *  mapSize : the size of density map wanted, (if 256 then the density map will generated will be 256^2
+ * @return :
+ *	the densityMap
+ */
+template< typename T >
+vector<vector<int>> compute_densityMap_CPU_simple_2Tabs(vector<T>tabX, vector<T>tabY, T maxX, T minX, T maxY, T minY, int mapSize) {
+	vector<vector<int>> densityMap(mapSize, vector<int>(mapSize));
+	T Xrange = maxX - minX;
+	T Yrange = maxY - minY;
+	cout << "( " << maxX << " , " << minX << " )" << " ==> " << Xrange << " , " << "( " << maxY << " , " << minY << " )" << " ==> " << Yrange << endl;
+	double tempX, tempY;
+	//cout << "before forloop of compute density" << endl;
+	for (int i = 0; i < tabX.size(); i += 2) {
+		tabX[i] = tabX[i] + minX * (-1);
+		tabY[i] = tabY[i] + minY * (-1);
+		tempX = round(((double)tabX[i] / (double)Xrange) * (mapSize - 1));
+		tempY = round(((double)tabY[i] / (double)Yrange) * (mapSize - 1));
+		//cout << "( " << tempX << " , " << tempY << " )" << endl;
+		densityMap[tempX][tempY]++;
+	}
+	return densityMap;
+}
 
 /*	@temporary
  *  add_Benchmark :
@@ -203,6 +231,7 @@ static void add_Benchmark(string filename, int n, int seed, double stddev, int n
 
 	for (int nb = 0; nb < number; nb++) {
 		int maxY = -10000, maxX = -10000, minY = 10000, minX = 10000;
+		seed = seed + nb;
 		if (width == -1 && height == -1) {
 			point_Array = generation_2(stddev, n, seed);
 			generation = "2";
@@ -229,7 +258,7 @@ static void add_Benchmark(string filename, int n, int seed, double stddev, int n
 		auto diff = end - start;
 		auto elapsed_time = chrono::duration <double, nano>(diff).count();
 
-		totalTime += elapsed_time;
+		totalTime += elapsed_time/number;
 		//uncomment this if you want to display the generated density map on the shell
 		//display_2Darray(densityMap1);
 
@@ -237,7 +266,6 @@ static void add_Benchmark(string filename, int n, int seed, double stddev, int n
 		cout << "CPU_densityMap" << to_string(nb) << ", " << n << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << dSize << ", " << elapsed_time << endl;
 		file_pointer << "CPU_densityMap" << to_string(nb) << ", " << n << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << dSize << ", " << elapsed_time << "\n";
 	}
-	totalTime = totalTime / number;
 
 	cout << "CPU_densityMap_Mean_On_" << to_string(number) << ", " << n << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << dSize << ", " << totalTime << endl;
 	file_pointer << "CPU_densityMap_Mean_On_" << to_string(number) << ", " << n << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << dSize << ", " << totalTime << "\n";
