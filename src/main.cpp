@@ -50,20 +50,20 @@ static string return_current_time_and_date_as_string() {
  *		A 1 dimensional array of int, with all the even indexes are the x value of the point and all the odd indexes are the y value of it
  */
 
-static vector<int> generation_1(unsigned int width, unsigned int height, unsigned int n, int seed, bool display=false) 
+static vector<int> generation_1(int width, int height, unsigned int n, int seed, bool display=false) 
 {
 	vector<int> point_Array;
 	srand(seed); //seed of the rng && should reset the seed at it's starting point.
 
 	/* array generation */
-	for (int i = 0; i < n; i++) {
+	for (unsigned int i = 0; i < n; i++) {
 		point_Array.push_back(rand()%(width+1));
 		point_Array.push_back(rand()%(height+1));
 	}
 
 	/* array display */
 	if (display) {
-		for (int i = 0; i < n * 2; i += 2) {
+		for (unsigned int i = 0; i < n * 2; i += 2) {
 			cout << "le point : (" << point_Array[i] << " ; " << point_Array[i + 1] << ") est dans notre tableau" << endl;
 		}
 	}
@@ -90,39 +90,84 @@ static vector<int> generation_2(double stddev, unsigned int n, int seed, bool di
 	vector<int> point_Array;
 
 	/* array generation */
-	for (int i = 0; i < n; i++) {
+	for (unsigned int i = 0; i < n; i++) {
 		point_Array.push_back(ceil(distribution(generator)));
 		point_Array.push_back(ceil(distribution(generator)));
 	}
 
 	/* array display */
 	if (display) {
-		for (int i = 0; i < n * 2; i += 2) {
+		for (unsigned int i = 0; i < n * 2; i += 2) {
 			cout << "le point : (" << point_Array[i] << " ; " << point_Array[i + 1] << ") est dans notre tableau" << endl;
 		}
 	}
 	return point_Array;
 }
 
-/*
- * For the moment this is an empty function, will change in future
- * Faire : Une fonction qui prend soit 1 tableaux de points, soit 2 tableaux (1 de x et 1 de y).
- * et qui génère la density map de ce(s) tableau(x).
- * Etapes :
- * - Récupération de 1 millions de points (ou plus)
- * - linéarisation de ces points :
- *		exemple :
- *			On à nos 1M de points qui vont entre 0 et 1500, notre density Map est de 256 par 256. On ramène donc notre échelle de 0 à 1500 à une échelle de 0 à 256.
- * - Une fois linéarisé, charger les points dans la density map.
- * C'est le temps d'update de la density map qui nous interesse.
+/*	Generation_1_Simple_Array :
+ *		Generate a tab filled with random values between 0 and limit
+ *	@params :
+ *		limit ; the maximum a point randomly generated can achieved
+ *		n ; number of values that should be generated
+ *		seed ; the seed wanted for the random number generation, will refresh it
+ *  @return :
+ *		A 1 dimensional array of int
  */
-template< typename T >
-static void TODO_fun(vector<T>tab) {
 
+static vector<int> generation_1_Simple_Array(int limit, unsigned int n, int seed, bool display = false)
+{
+	vector<int> point_Array;
+	srand(seed); //seed of the rng && should reset the seed at it's starting point.
+
+	/* array generation */
+	for (unsigned int i = 0; i < n; i++) {
+		point_Array.push_back(rand() % (limit + 1));
+	}
+
+	/* array display */
+	if (display) {
+		for (unsigned int i = 0; i < n; i++) {
+			cout << "le point " << i << " à comme valeurs en X : " << point_Array[i] << endl;
+		}
+	}
+	return point_Array;
+}
+
+
+/*	Generation_2_Simple_Array :
+ *		Generate a tab filled with random values for points following a normal distribution (gaussian) with mean = 0
+ *	@params :
+ *		stddev ; the standard deviation that'll follow the distribution
+ *		n ; number of values that should be generated
+ *		seed ; the seed wanted for the random number generation, will refresh it
+ *  @return :
+ *		A 1 dimensional array of int, of size n
+ */
+
+static vector<int> generation_2_simple_Array (double stddev, unsigned int n, int seed, bool display = false)
+{
+	//normal distribution construction
+	default_random_engine generator(seed); //seed of the rng && should reset the seed at it's starting point.
+	normal_distribution<double> distribution(0.0, stddev);
+
+	vector<int> point_Array;
+
+	/* array generation */
+	for (unsigned int i = 0; i < n; i++) {
+		point_Array.push_back(ceil(distribution(generator)));
+	}
+
+	/* array display */
+	if (display) {
+		for (unsigned int i = 0; i < n; i ++) {
+			cout << "le point " << i << " à comme valeurs en X ou Y : " << point_Array[i] << endl;
+		}
+	}
+	return point_Array;
 }
 
 /*
-DEBUUG FUNCTION
+DEBUG FUNCTION
 display a 2 dimensional array given as param on the standard output
 */
 template< typename T >
@@ -130,8 +175,8 @@ static void display_2Darray(vector<vector<T>> tab) {
 
 	cout << endl;
 
-	for (int i = 0; i < tab.size(); i++) {
-		for (int j = 0; j < tab[i].size(); j++) {
+	for (unsigned int i = 0; i < tab.size(); i++) {
+		for (unsigned int j = 0; j < tab[i].size(); j++) {
 			cout << tab[i][j] << " | ";
 		}
 		cout << endl;
@@ -148,19 +193,16 @@ static void display_2Darray(vector<vector<T>> tab) {
  *	the densityMap
  */
 template< typename T >
-vector<vector<int>> compute_densityMap_CPU_simple_1Tab(vector<T>tab, T maxX, T minX, T maxY, T minY, int mapSize) {
-	vector<vector<int>> densityMap(mapSize, vector<int>(mapSize));
+vector<vector<unsigned int>> compute_densityMap_CPU_simple_1Tab(vector<T>tab, T maxX, T minX, T maxY, T minY, unsigned int mapSize) {
+	vector<vector<unsigned int>> densityMap(mapSize, vector<unsigned int>(mapSize));
 	T Xrange = maxX - minX;
 	T Yrange = maxY - minY;
-	cout << "( " << maxX << " , " << minX << " )" << " ==> " << Xrange << " , " << "( " << maxY << " , " << minY << " )" << " ==> " << Yrange <<  endl;
 	double tempX, tempY;
-	//cout << "before forloop of compute density" << endl;
-	for (int i = 0; i < tab.size(); i+=2) {
+	for (unsigned int i = 0; i < tab.size(); i+=2) {
 		tab[i] = tab[i] + minX * (-1);
 		tab[i + 1] = tab[i + 1] + minY * (-1);
 		tempX = round(((double)tab[i] / (double)Xrange) * (mapSize-1));
 		tempY = round(((double)tab[i+1] /(double)Yrange) * (mapSize-1));
-		//cout << "( " << tempX << " , " << tempY << " )" << endl;
 		densityMap[tempX][tempY]++;
 	}
 	return densityMap;
@@ -177,19 +219,16 @@ vector<vector<int>> compute_densityMap_CPU_simple_1Tab(vector<T>tab, T maxX, T m
  *	the densityMap
  */
 template< typename T >
-vector<vector<int>> compute_densityMap_CPU_simple_2Tabs(vector<T>tabX, vector<T>tabY, T maxX, T minX, T maxY, T minY, int mapSize) {
-	vector<vector<int>> densityMap(mapSize, vector<int>(mapSize));
+vector<vector<unsigned int>> compute_densityMap_CPU_simple_2Tabs(vector<T>tabX, vector<T>tabY, T maxX, T minX, T maxY, T minY, unsigned int mapSize) {
+	vector<vector<unsigned int>> densityMap(mapSize, vector<unsigned int>(mapSize));
 	T Xrange = maxX - minX;
 	T Yrange = maxY - minY;
-	cout << "( " << maxX << " , " << minX << " )" << " ==> " << Xrange << " , " << "( " << maxY << " , " << minY << " )" << " ==> " << Yrange << endl;
 	double tempX, tempY;
-	//cout << "before forloop of compute density" << endl;
-	for (int i = 0; i < tabX.size(); i += 2) {
+	for (unsigned int i = 0; i < tabX.size(); i += 2) {
 		tabX[i] = tabX[i] + minX * (-1);
 		tabY[i] = tabY[i] + minY * (-1);
 		tempX = round(((double)tabX[i] / (double)Xrange) * (mapSize - 1));
 		tempY = round(((double)tabY[i] / (double)Yrange) * (mapSize - 1));
-		//cout << "( " << tempX << " , " << tempY << " )" << endl;
 		densityMap[tempX][tempY]++;
 	}
 	return densityMap;
@@ -210,7 +249,7 @@ vector<vector<int>> compute_densityMap_CPU_simple_2Tabs(vector<T>tabX, vector<T>
  *		stddev ; the standard deviation that'll follow the distribution (for generation2)
  */
 
-static void add_Benchmark(string filename, int n, int seed, double stddev, int number, int width = -1, int height = -1)
+static void add_Benchmark(string filename, unsigned int n, int seed, double stddev, unsigned int number, int width = -1, int height = -1)
 {
 	ofstream file_pointer;
 	/* opens an existing csv file or creates a new file. Every output operation will be push at the end of file.
@@ -227,10 +266,11 @@ static void add_Benchmark(string filename, int n, int seed, double stddev, int n
 	auto totalTime = 0;
 	vector<int> point_Array;
 	string generation = "";
-	int dSize = 256;
+	int dSize = 32;
 
-	for (int nb = 0; nb < number; nb++) {
+	for (unsigned int nb = 0; nb < number; nb++) {
 		int maxY = -10000, maxX = -10000, minY = 10000, minX = 10000;
+		/* Changing the seed for every loop, used for refreshing cas*/
 		seed = seed + nb;
 		if (width == -1 && height == -1) {
 			point_Array = generation_2(stddev, n, seed);
@@ -242,7 +282,7 @@ static void add_Benchmark(string filename, int n, int seed, double stddev, int n
 		}
 
 		//determining the min X & Y, the max X & Y
-		for (int i = 0; i < n * 2; i += 2) {
+		for (unsigned int i = 0; i < n * 2; i += 2) {
 			if (point_Array[i] < minX) { minX = point_Array[i]; }
 			else if (point_Array[i] > maxX) { maxX = point_Array[i]; }
 			if (point_Array[i + 1] < minY) { minY = point_Array[i + 1]; }
@@ -252,7 +292,7 @@ static void add_Benchmark(string filename, int n, int seed, double stddev, int n
 		auto start = chrono::steady_clock::now();
 
 		//HERE the functions to be evaluated
-		vector<vector<int>> densityMap1 = compute_densityMap_CPU_simple_1Tab(point_Array, maxX, minX, maxY, minY, dSize);
+		vector<vector<unsigned int>> densityMap1 = compute_densityMap_CPU_simple_1Tab(point_Array, maxX, minX, maxY, minY, dSize);
 
 		auto end = chrono::steady_clock::now();
 		auto diff = end - start;
@@ -260,7 +300,7 @@ static void add_Benchmark(string filename, int n, int seed, double stddev, int n
 
 		totalTime += elapsed_time/number;
 		//uncomment this if you want to display the generated density map on the shell
-		//display_2Darray(densityMap1);
+		display_2Darray(densityMap1);
 
 		//Insert data to file filename
 		cout << "CPU_densityMap" << to_string(nb) << ", " << n << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << dSize << ", " << elapsed_time << endl;
@@ -297,7 +337,7 @@ int main() {
   cout << "display Y/N (resp 1/0) :" << endl;
   cin >> answer;
   answer == 0 ? display = false : display = true;*/
-  int stddev = 0;
+  double stddev = 0;
   cout << "standard deviation for the normal distribution :" << endl;
   cin >> stddev;
   string bench_name;
