@@ -84,6 +84,7 @@ static vector<int> generation_1(int width, int height, unsigned int n, int seed,
 static vector<int> generation_2(double stddev, unsigned int n, int seed, bool display=false)
 {
 	//normal distribution construction
+	//when using 1 as seed, generate a whole line of 0, don't know why. But work perfectly fine with other seed values
 	default_random_engine generator(seed); //seed of the rng && should reset the seed at it's starting point.
 	normal_distribution<double> distribution (0.0,stddev);
 
@@ -114,24 +115,24 @@ static vector<int> generation_2(double stddev, unsigned int n, int seed, bool di
  *		A 1 dimensional array of int
  */
 
-static vector<int> generation_1_Simple_Array(int limit, unsigned int n, int seed, bool display = false)
+/*static vector<int> generation_1_Simple_Array(int limit, unsigned int n, int seed, bool display = false)
 {
 	vector<int> point_Array;
 	srand(seed); //seed of the rng && should reset the seed at it's starting point.
 
-	/* array generation */
+	// array generation
 	for (unsigned int i = 0; i < n; i++) {
 		point_Array.push_back(rand() % (limit + 1));
 	}
 
-	/* array display */
+	// array display
 	if (display) {
 		for (unsigned int i = 0; i < n; i++) {
 			cout << "le point " << i << " à comme valeurs en X : " << point_Array[i] << endl;
 		}
 	}
 	return point_Array;
-}
+}*/
 
 
 /*	Generation_2_Simple_Array :
@@ -144,7 +145,7 @@ static vector<int> generation_1_Simple_Array(int limit, unsigned int n, int seed
  *		A 1 dimensional array of int, of size n
  */
 
-static vector<int> generation_2_simple_Array (double stddev, unsigned int n, int seed, bool display = false)
+/*static vector<int> generation_2_Simple_Array (double stddev, unsigned int n, int seed, bool display = false)
 {
 	//normal distribution construction
 	default_random_engine generator(seed); //seed of the rng && should reset the seed at it's starting point.
@@ -152,19 +153,19 @@ static vector<int> generation_2_simple_Array (double stddev, unsigned int n, int
 
 	vector<int> point_Array;
 
-	/* array generation */
+	// array generation
 	for (unsigned int i = 0; i < n; i++) {
 		point_Array.push_back(ceil(distribution(generator)));
 	}
 
-	/* array display */
+	// array display
 	if (display) {
 		for (unsigned int i = 0; i < n; i ++) {
 			cout << "le point " << i << " à comme valeurs en X ou Y : " << point_Array[i] << endl;
 		}
 	}
 	return point_Array;
-}
+}*/
 
 /*
 DEBUG FUNCTION
@@ -249,7 +250,7 @@ vector<vector<unsigned int>> compute_densityMap_CPU_simple_2Tabs(vector<T>tabX, 
  *		stddev ; the standard deviation that'll follow the distribution (for generation2)
  */
 
-static void add_Benchmark(string filename, unsigned int n, int seed, double stddev, unsigned int number, int width = -1, int height = -1)
+static void add_Benchmark(string filename, unsigned int n, int seed, double stddev, unsigned int number, int width = -1, int height = -1, bool two_tabs = false)
 {
 	ofstream file_pointer;
 	/* opens an existing csv file or creates a new file. Every output operation will be push at the end of file.
@@ -265,6 +266,9 @@ static void add_Benchmark(string filename, unsigned int n, int seed, double stdd
 
 	auto totalTime = 0;
 	vector<int> point_Array;
+	vector<int> point_ArrayX;
+	vector<int> point_ArrayY;
+	vector<vector<unsigned int>> densityMap1;
 	string generation = "";
 	int dSize = 32;
 
@@ -292,11 +296,23 @@ static void add_Benchmark(string filename, unsigned int n, int seed, double stdd
 			else if (point_Array[i + 1] > maxY) { maxY = point_Array[i + 1]; }
 		}
 
+		if (two_tabs) {
+			for (unsigned int i = 0; i < n * 2; i += 2) {
+				point_ArrayX.push_back(point_Array[i]);
+				point_ArrayY.push_back(point_Array[i + 1]);
+			}
+		}
+
 		auto start = chrono::steady_clock::now();
 
 		//HERE the functions to be evaluated
-		vector<vector<unsigned int>> densityMap1 = compute_densityMap_CPU_simple_1Tab(point_Array, maxX, minX, maxY, minY, dSize);
-
+		if (two_tabs) {
+			densityMap1 = compute_densityMap_CPU_simple_2Tabs(point_ArrayX, point_ArrayY, maxX, minX, maxY, minY, dSize);
+		}
+		else {
+			densityMap1 = compute_densityMap_CPU_simple_1Tab(point_Array, maxX, minX, maxY, minY, dSize);
+		}
+		
 		auto end = chrono::steady_clock::now();
 		auto diff = end - start;
 		auto elapsed_time = chrono::duration <double, nano>(diff).count();
@@ -329,13 +345,13 @@ int main() {
   int seed = 1;
   cout << "seed for the tests" << endl;
   cin >>  seed;
-  /*int window_width = 0;
+  int window_width = 0;
   cout << "window width :" << endl;
   cin >> window_width;
   int window_height = 0;
   cout << "window height :" << endl;
   cin >> window_height;
-  int answer = -1;
+  /*int answer = -1;
   bool display;
   cout << "display Y/N (resp 1/0) :" << endl;
   cin >> answer;
@@ -353,7 +369,10 @@ int main() {
   ss << "bench_" << return_current_time_and_date_as_string() << ".csv";
   string filename = ss.str();
 
-  add_Benchmark(filename, points_nb, seed, stddev, 25);
+  add_Benchmark(filename, points_nb, seed, stddev, 1);
+  add_Benchmark(filename, points_nb, seed, stddev, 1, window_width, window_height, true);
+  add_Benchmark(filename, points_nb, seed, stddev, 1);
+  add_Benchmark(filename, points_nb, seed, stddev, 1, window_width, window_height, true);
   
 
   /*auto start = chrono::steady_clock::now();
