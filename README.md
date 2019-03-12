@@ -29,7 +29,7 @@ other softs :
 * [Cmake](https://cmake.org/)
 * G++ : C++11 required (I recommand using [Microsoft Visual Studio](https://visualstudio.microsoft.com/fr/) which provide G++ and got high compatibility with Cmake)
 
-librairies (just install them using the package manager of your OS):
+librairies (just install them using the following explanations):
 * [GLEW](http://glew.sourceforge.net/)
 * [GLFW](https://www.glfw.org/)
 * [openCV](https://opencv.org/)
@@ -53,7 +53,7 @@ A step by step series of instructions that tell you how to get a development env
 ## Autors
 * Jean-Daniel Fekete ( [Homepage](https://www.aviz.fr/~fekete/) )- Leader of the [INRIA](https://www.inria.fr/) Project Team [AVIZ](https://www.aviz.fr/)
 * Frederic Vernier ( [Homepage](http://vernier.frederic.free.fr/) ) - Lecturer (Professor Assistant) teaching at [South-Paris University](http://www.u-psud.fr/fr/index.html) and researcher (at [LIMSI](https://www.limsi.fr/en/)).
-* Rémi Bardes - Master student in computer science at [South-Paris University](http://www.u-psud.fr/fr/index.html)
+* RÃ©mi Bardes - Master student in computer science at [South-Paris University](http://www.u-psud.fr/fr/index.html)
 
 ## Licence :
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
