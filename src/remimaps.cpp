@@ -13,6 +13,7 @@
 #include <fstream>
 #include <algorithm>
 #include <map>
+#include <random>
 using namespace std;
  
 #include <stdlib.h>
@@ -41,8 +42,8 @@ using namespace std;
 // using namespace glm;
  
 // default values
-int window_width = 1024;
-int window_height = 768;
+int window_width = 32;
+int window_height = 32;
 
 GLuint fbo;
 GLuint color_renderbuffer;
@@ -52,6 +53,7 @@ cv::Mat img;
 
 int N        = 1000000;
 int NB_CAT   = 46;
+int mapSize = 32;
 
 GLuint *VertexArrayIDAs;
  
@@ -166,6 +168,24 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 void key_callback(GLFWwindow *window, GLFWcharfun cbfun){
   //c/bfun
 }
+
+/*
+DEBUG FUNCTION
+display a 2 dimensional array given as param on the standard output
+*/
+template< typename T >
+static void display_2Darray(vector<vector<T>> tab) {
+
+	cout << endl;
+
+	for (unsigned int i = 0; i < tab.size(); i++) {
+		for (unsigned int j = 0; j < tab[i].size(); j++) {
+			cout << tab[i][j] << " | ";
+		}
+		cout << endl;
+	}
+}
+
 /*
  ██████ ██   ██  █████  ██████   █████   ██████ ████████ ███████ ██████           ██████  █████  ██      ██      ██████   █████   ██████ ██   ██
 ██      ██   ██ ██   ██ ██   ██ ██   ██ ██         ██    ██      ██   ██         ██      ██   ██ ██      ██      ██   ██ ██   ██ ██      ██  ██
@@ -203,10 +223,19 @@ void character_callback(GLFWwindow* window, unsigned int codepoint){
 
         cv::Mat flipped(img);
         cv::flip(img, flipped, 0);
-        for (int i=0; i<700; i++){
+        /*for (int i=0; i<700; i++){
           cout <<i<<": "<<flipped.at<float>(i,907, 0)<<endl;
-          flipped.at<float>(i, 907, 0) = 255;
-        }
+          flipped.at<float>(i, i, 0) += 128.5;
+        }*/
+		vector<vector<unsigned int>> densityMap(mapSize, vector<unsigned int>(mapSize));
+
+		for (int i = 0; i < window_height; i++) {
+			for (int j = 0; j < window_width; j++) {
+				//cout << "( " << i << " ; " << j << " ) ==> " << flipped.at<float>(i, j) << endl;
+				densityMap[j][i] = flipped.at<float>(i, j);
+			}
+		}
+		display_2Darray(densityMap);
         cv::imwrite("snapshot.png", img);
       }    
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -257,59 +286,20 @@ void character_callback(GLFWwindow* window, unsigned int codepoint){
 ██  ██  ██ ██   ██ ██  ██  ██      ██  ██  ██ ██    ██ ██   ██ ██      ██      ██   ██
 ██      ██ ██   ██ ██   ██ ███████ ██      ██  ██████  ██████  ███████ ███████ ██   ██
 */
-GLuint *makeModelA() {
+GLuint *makeModelA(int width, int height, int seed) {
   cout << "  makeModelA "<<N<<" "<<N<<endl;
    
+  srand(seed); //seed of the rng && should reset the seed at it's starting point.
+
   GLfloat* g_vertex_pos_data1    = new GLfloat[N*2];
-  GLfloat* g_vertex_color_data1  = new GLfloat[N*4];
 
-  for(int i=0; i<N*2; i++) 
-    g_vertex_pos_data1[i]   = 7.654321;
-  for(int i=0; i<N*4; i++) 
-    g_vertex_color_data1[i] = 7.654321;
-  
-
-  g_vertex_pos_data1  [0*2+0] = 0;
-  g_vertex_pos_data1  [0*2+1] = 0.5;
-  g_vertex_color_data1[0*4+0] = 0.1;
-  g_vertex_color_data1[0*4+1] = 0.1;
-  g_vertex_color_data1[0*4+2] = 0.1;
-  g_vertex_color_data1[0*4+3] = 1.0f;
-  
-  g_vertex_pos_data1  [1*2+0] = 0.08;
-  g_vertex_pos_data1  [1*2+1] = 0.5;
-  g_vertex_color_data1[1*4+0] = 0.1;
-  g_vertex_color_data1[1*4+1] = 0.1;
-  g_vertex_color_data1[1*4+2] = 0.1;
-  g_vertex_color_data1[1*4+3] = 1.0f;
-  
-  g_vertex_pos_data1  [2*2+0] = 0.16;
-  g_vertex_pos_data1  [2*2+1] = 0.5;
-  g_vertex_color_data1[2*4+0] = 0.1;
-  g_vertex_color_data1[2*4+1] = 0.1;
-  g_vertex_color_data1[2*4+2] = 0.1;
-  g_vertex_color_data1[2*4+3] = 1.0f;
-
-  for(int i=3; i<N; i++) {
-    g_vertex_pos_data1[i*2+0] = rnd()-0.5;
-    g_vertex_pos_data1[i*2+1] = rnd()-1.0;
-    
-    g_vertex_color_data1[i*4+0] = 0.0+0.1*rnd();
-    g_vertex_color_data1[i*4+1] = 0.0+0.1*rnd();
-    g_vertex_color_data1[i*4+2] = 0.0+0.1*rnd();
-    g_vertex_color_data1[i*4+3] = 1.0f;
+  for(int i=0; i<N; i++) {
+    //g_vertex_pos_data1[i*2+0] = (rand() % (width + 1));
+    //g_vertex_pos_data1[i*2+1] = (rand() % (height + 1));
+	  g_vertex_pos_data1[i * 2 + 0] = rnd();
+	  g_vertex_pos_data1[i * 2 + 1] = rnd();
   }
 
-  for(int i=0; i<N*2; i++)
-    if (g_vertex_pos_data1[i] > 7.654320 && g_vertex_pos_data1[i] < 7.654322){
-      cout << i<<" EVIL 1 IS IN THE DETAIL !" << endl ;
-      abort();
-    }
-  for(int i=0; i<N*4; i++)
-    if (g_vertex_color_data1[i] > 7.654320 && g_vertex_color_data1[i] < 7.654322){
-      cout << i<<" EVIL 2 IS IN THE DETAIL !" << endl ;
-      abort();
-    }  
 
     // Bon maintenant on cree le VAO et cette fois on va s'en servir !
       GLuint *VertexArrayIDs = new GLuint[1];
@@ -324,11 +314,9 @@ GLuint *makeModelA() {
       // The following commands will talk about our 'vertexbuffer' buffer
       glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer1);
         // Only allocate memory. Do not send yet our vertices to OpenGL.
-        glBufferData(GL_ARRAY_BUFFER, N*2*sizeof(GLfloat)+
-                                      N*4*sizeof(GLfloat), 0, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, N*2*sizeof(GLfloat), 0, GL_STATIC_DRAW);
                                        
         glBufferSubData(GL_ARRAY_BUFFER, 0,                   N*2*sizeof(GLfloat), g_vertex_pos_data1);
-        glBufferSubData(GL_ARRAY_BUFFER, N*2*sizeof(GLfloat), N*4*sizeof(GLfloat), g_vertex_color_data1);
                                          
         glVertexAttribPointer(
            0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
@@ -340,15 +328,6 @@ GLuint *makeModelA() {
         );
         glEnableVertexAttribArray(0);
          
-        glVertexAttribPointer( // same thing for the colors
-          1,
-          4,
-          GL_FLOAT,
-          GL_FALSE,
-          0,
-          (void*)(N*2*sizeof(GLfloat)));
-        glEnableVertexAttribArray(1);
-         
          
       glBindBuffer(GL_ARRAY_BUFFER, 0);
        
@@ -356,7 +335,6 @@ GLuint *makeModelA() {
       glBindVertexArray (0);
 
       delete[] g_vertex_pos_data1;
-      delete[] g_vertex_color_data1;
 
       //cout << "  makeModelA done "<<N<<endl;
        
@@ -506,18 +484,16 @@ int main(int argc, char * argv[]){
    
    
   programID = LoadShaders( "remimaps.vs", "remimaps.fs" );
-   
-  uniform_projP     = glGetUniformLocation(programID, "projectionMatrix");
-  uniform_viewP     = glGetUniformLocation(programID, "viewMatrix");
-  uniform_modelP    = glGetUniformLocation(programID, "modelMatrix");
-   
+  GLint rx =  glGetUniformLocation(programID, "rangex");
+  GLint ry = glGetUniformLocation(programID, "rangey");
+
   // load data
   
   // make opengl model
   
-  VertexArrayIDAs = makeModelA();
+  VertexArrayIDAs = makeModelA(window_width, window_height, 5);
    
-  cout << "starting loop "<<N<<endl;
+  cout << "starting loop REMI "<<N<<endl;
 
   int frameCount = 0;
   double previousTime = glfwGetTime();
@@ -528,21 +504,16 @@ int main(int argc, char * argv[]){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
     if (VertexArrayIDAs!=0){
-      //glBindFramebuffer(GL_FRAMEBUFFER, fbo);
       
       glUseProgram(programID);
+	  glUniform1f(rx, 2.0);
+	  glUniform1f(ry, 2.0);
       
       glBindVertexArray(VertexArrayIDAs[0]);
       glDrawArrays(GL_POINTS, 0, N); //all the vertices
       glBindVertexArray (0);       
       glUseProgram(0);
 
-      /*glPixelStorei(GL_PACK_ALIGNMENT, (img.step & 3)?1:4);
-      glPixelStorei(GL_PACK_ROW_LENGTH, img.step/img.elemSize()); 
-      glReadPixels(0, 0, img.cols, img.rows, GL_BGRA, GL_UNSIGNED_BYTE, img.data);
-      cv::Mat flipped(img);
-      cv::flip(img, flipped, 0);
-      cv::imwrite("snapshot.png", img);*/
     }
           
     // Swap buffers

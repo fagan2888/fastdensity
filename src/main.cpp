@@ -252,8 +252,14 @@ vector<vector<unsigned int>> compute_densityMap_CPU_simple_2Tabs(vector<T>tabX, 
 
 static void add_Benchmark(string filename, unsigned int n, int seed, double stddev, unsigned int number, int width = -1, int height = -1, bool two_tabs = false)
 {
+	ifstream file_pointer_read;
+	file_pointer_read.open(filename, ios::in);
+	string reading;
+	getline(file_pointer_read, reading);
+	file_pointer_read.close();
 	ofstream file_pointer;
 	/* opens an existing csv file or creates a new file. Every output operation will be push at the end of file.
+		flag in : Open for input operations (reading essentially);
 		flag out : Open for output operations.
 		flag app : 	All output operations are performed at the end of the file, appending the content to the current content of the file.
 	*/
@@ -262,9 +268,9 @@ static void add_Benchmark(string filename, unsigned int n, int seed, double stdd
 	{
 		cout << "Error in creating file!!! " << filename << endl;
 	}
-	file_pointer << "Benchmark Name, number of points, seed used, stddev, width, height, generation used, densityMap size, elapsed_time (ns), \n";
+	if(reading == "") file_pointer << "Benchmark Name, number of points, seed used, stddev, width, height, generation used, densityMap size, elapsed_time (ns), \n";
 
-	auto totalTime = 0;
+	long totalTime = 0;
 	vector<int> point_Array;
 	vector<int> point_ArrayX;
 	vector<int> point_ArrayY;
@@ -278,7 +284,7 @@ static void add_Benchmark(string filename, unsigned int n, int seed, double stdd
 			I choose this way of changing the seed for keeping the same seed for future calcul process.
 			Will probably need a preload of every points on the cache for equalise the calcul process.
 		*/
-		seed = seed + nb;
+		seed = seed + 1;
 		if (width == -1 && height == -1) {
 			point_Array = generation_2(stddev, n, seed);
 			generation = "2";
@@ -315,9 +321,9 @@ static void add_Benchmark(string filename, unsigned int n, int seed, double stdd
 		
 		auto end = chrono::steady_clock::now();
 		auto diff = end - start;
-		auto elapsed_time = chrono::duration <double, nano>(diff).count();
+		auto elapsed_time = chrono::duration <long, nano>(diff).count();
 
-		totalTime += elapsed_time/number;
+		totalTime += elapsed_time;
 		//uncomment this if you want to display the generated density map on the shell
 		display_2Darray(densityMap1);
 
@@ -326,6 +332,8 @@ static void add_Benchmark(string filename, unsigned int n, int seed, double stdd
 		file_pointer << "CPU_densityMap" << to_string(nb) << ", " << n << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << dSize << ", " << elapsed_time << "\n";
 	}
 
+	totalTime = totalTime / number;
+	
 	cout << "CPU_densityMap_Mean_On_" << to_string(number) << ", " << n << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << dSize << ", " << totalTime << endl;
 	file_pointer << "CPU_densityMap_Mean_On_" << to_string(number) << ", " << n << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << dSize << ", " << totalTime << "\n";
 
@@ -369,10 +377,10 @@ int main() {
   ss << "bench_" << return_current_time_and_date_as_string() << ".csv";
   string filename = ss.str();
 
+  add_Benchmark(filename, points_nb, seed, stddev, 30);
+  /*add_Benchmark(filename, points_nb, seed, stddev, 1, window_width, window_height, true);
   add_Benchmark(filename, points_nb, seed, stddev, 1);
-  add_Benchmark(filename, points_nb, seed, stddev, 1, window_width, window_height, true);
-  add_Benchmark(filename, points_nb, seed, stddev, 1);
-  add_Benchmark(filename, points_nb, seed, stddev, 1, window_width, window_height, true);
+  add_Benchmark(filename, points_nb, seed, stddev, 1, window_width, window_height, true);*/
   
 
   /*auto start = chrono::steady_clock::now();
