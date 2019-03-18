@@ -11,9 +11,9 @@
 #include <algorithm>
 #include <ctime>
 
-#include "fastdensity/fastdensity.hpp"
-
 #include <GLFW/glfw3.h>
+
+#include "fastdensity/fastdensity.hpp"
 
 using namespace std;
 
@@ -21,6 +21,16 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
+static void hello_World_OpenMp(unsigned int n_thread) {
+
+	omp_set_num_threads(n_thread);
+
+	#pragma omp parallel for
+	for (int i = 0; i < 4; i++) {
+		cout << "thread numéros : " << omp_thread_num() << endl;
+	}
 }
 
 /*	return_current_time_and_date_as_string :
@@ -364,20 +374,23 @@ int main() {
   cout << "display Y/N (resp 1/0) :" << endl;
   cin >> answer;
   answer == 0 ? display = false : display = true;*/
-  double stddev = 0;
+  /*double stddev = 0;
   cout << "standard deviation for the normal distribution :" << endl;
   cin >> stddev;
-  string bench_name;
+  string bench_name;*/
 
   /*vector<int> temp1 = generation_1(window_width, window_height, points_nb, seed, display);
   vector<int> temp2 = generation_2(stddev, points_nb, seed, display);*/
 
   /* getting the date for naming the file */
-  stringstream ss;
+  /*stringstream ss;
   ss << "bench_" << return_current_time_and_date_as_string() << ".csv";
   string filename = ss.str();
 
-  add_Benchmark(filename, points_nb, seed, stddev, 30);
+  add_Benchmark(filename, points_nb, seed, stddev, 30);*/
+
+  hello_World_OpenMP(4);
+
   /*add_Benchmark(filename, points_nb, seed, stddev, 1, window_width, window_height, true);
   add_Benchmark(filename, points_nb, seed, stddev, 1);
   add_Benchmark(filename, points_nb, seed, stddev, 1, window_width, window_height, true);*/
