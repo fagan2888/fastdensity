@@ -202,6 +202,8 @@ static void display_2Darray(vector<vector<T>> tab) {
  *  mapSize : the size of density map wanted, (if 256 then the density map will generated will be 256^2
  * @return :
  *	the densityMap
+ *
+ * compute_densityMap_CPU_multThread_1Tab do the same with a bit of multi threading
  */
 template< typename T >
 vector<vector<unsigned int>> compute_densityMap_CPU_simple_1Tab(vector<T>tab, T maxX, T minX, T maxY, T minY, unsigned int mapSize) {
@@ -219,6 +221,23 @@ vector<vector<unsigned int>> compute_densityMap_CPU_simple_1Tab(vector<T>tab, T 
 	return densityMap;
 }
 
+template< typename T >
+vector<vector<unsigned int>> compute_densityMap_CPU_multThread_1Tab(vector<T>tab, T maxX, T minX, T maxY, T minY, unsigned int mapSize) {
+	vector<vector<unsigned int>> densityMap(mapSize, vector<unsigned int>(mapSize));
+	T Xrange = maxX - minX;
+	T Yrange = maxY - minY;
+	double tempX, tempY;
+	#pragma omp parallel for
+	for (unsigned int i = 0; i < tab.size(); i += 2) {
+		tab[i] = tab[i] + minX * (-1);
+		tab[i + 1] = tab[i + 1] + minY * (-1);
+		tempX = round(((double)tab[i] / (double)Xrange) * (mapSize - 1));
+		tempY = round(((double)tab[i + 1] / (double)Yrange) * (mapSize - 1));
+		densityMap[tempX][tempY]++;
+	}
+	return densityMap;
+}
+
 /*
  * Compute_densityMap_CPU_simple_2Tabs :
  * @params :
@@ -228,6 +247,8 @@ vector<vector<unsigned int>> compute_densityMap_CPU_simple_1Tab(vector<T>tab, T 
  *  mapSize : the size of density map wanted, (if 256 then the density map will generated will be 256^2
  * @return :
  *	the densityMap
+ *
+ * compute_densityMap_CPU_multThread_2Tabs do the same with a bit of multi threading
  */
 template< typename T >
 vector<vector<unsigned int>> compute_densityMap_CPU_simple_2Tabs(vector<T>tabX, vector<T>tabY, T maxX, T minX, T maxY, T minY, unsigned int mapSize) {
@@ -235,6 +256,23 @@ vector<vector<unsigned int>> compute_densityMap_CPU_simple_2Tabs(vector<T>tabX, 
 	T Xrange = maxX - minX;
 	T Yrange = maxY - minY;
 	double tempX, tempY;
+	for (unsigned int i = 0; i < tabX.size(); i += 2) {
+		tabX[i] = tabX[i] + minX * (-1);
+		tabY[i] = tabY[i] + minY * (-1);
+		tempX = round(((double)tabX[i] / (double)Xrange) * (mapSize - 1));
+		tempY = round(((double)tabY[i] / (double)Yrange) * (mapSize - 1));
+		densityMap[tempX][tempY]++;
+	}
+	return densityMap;
+}
+
+template< typename T >
+vector<vector<unsigned int>> compute_densityMap_CPU_multThread_2Tabs(vector<T>tabX, vector<T>tabY, T maxX, T minX, T maxY, T minY, unsigned int mapSize) {
+	vector<vector<unsigned int>> densityMap(mapSize, vector<unsigned int>(mapSize));
+	T Xrange = maxX - minX;
+	T Yrange = maxY - minY;
+	double tempX, tempY;
+	#pragma omp parallel for
 	for (unsigned int i = 0; i < tabX.size(); i += 2) {
 		tabX[i] = tabX[i] + minX * (-1);
 		tabY[i] = tabY[i] + minY * (-1);
