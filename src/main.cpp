@@ -10,6 +10,7 @@
 #include <string>
 #include <algorithm>
 #include <ctime>
+#include <Windows.h>
 
 #include <GLFW/glfw3.h>
 
@@ -25,11 +26,94 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 static void hello_World_OpenMp(unsigned int n_thread) {
 
-	omp_set_num_threads(n_thread);
+	//omp_set_num_threads(n_thread);
 
 	#pragma omp parallel for
 	for (int i = 0; i < 4; i++) {
-		cout << "thread numéros : " << omp_thread_num() << endl;
+		//cout << "thread numéros : " << omp_thread_num() << endl;
+	}
+}
+
+/* init_file_with_spec :
+ *	@params :
+ *	- filename : a string wich is the path to an empty csv file.
+ *	
+ *	This function initialize a CSV file with the computeur information (CPU / GPU / Bus / etc)
+ *	And also put the headers coresponding to the benchmark's tests
+ */
+static void init_file_with_spec(string filename) {
+
+	string CPU = "";
+	string CPU_nb = "";
+	string RAM = "";
+	string GPU = "";
+
+	/* Get computeur components informations */
+	#ifdef _WIN32
+		SYSTEM_INFO siSysInfo;
+		ULONGLONG ram_buffer;
+		// Copy the hardware information to the SYSTEM_INFO structure. 
+		GetSystemInfo(&siSysInfo);
+		GetPhysicallyInstalledSystemMemory(&ram_buffer);
+
+		switch (siSysInfo.wProcessorArchitecture)
+		{
+			case 9 :
+				CPU = "x64 AMD or Intel"; break;
+			case 5 :
+				CPU = "ARM"; break;
+			case 12 :
+				CPU = "ARM64"; break;
+			case 6 :
+				CPU = "Intel titanium-based"; break;
+			case 0 :
+				CPU = "x86"; break;
+			case 0xffff :
+				CPU = "Unknown architecture"; break;
+		}
+		
+		CPU_nb = to_string(siSysInfo.dwNumberOfProcessors);
+
+		RAM = to_string(ram_buffer) +  "bytes";
+
+	#endif
+	#ifdef _unix_
+		//TODO
+	#endif
+	#ifdef _MACH_
+		//TODO
+	#endif
+
+
+	/* File initialisation*/
+
+	ifstream file_pointer_read;
+	file_pointer_read.open(filename, ios::in);
+	string reading;
+	getline(file_pointer_read, reading);
+	file_pointer_read.close();
+	ofstream file_pointer;
+	/* opens an existing csv file or creates a new file. Every output operation will be push at the end of file.
+		flag in : Open for input operations (reading essentially);
+		flag out : Open for output operations.
+		flag app : 	All output operations are performed at the end of the file, appending the content to the current content of the file.
+	*/
+	file_pointer.open(filename, ios::out | ios::app);
+	if (!file_pointer)
+	{
+		cout << "Error in creating file!!! " << filename << endl;
+	}
+	if (reading == "") {
+		file_pointer << "the computeur informations are : \n";
+		file_pointer << "CPU_Architecture : " << CPU << "\n";
+		file_pointer << "CPU_number : " << CPU_nb << "\n";
+		file_pointer << "RAM capacity : " << RAM << "\n";
+		file_pointer << "GPU_information : " << GPU << "\n";
+		file_pointer << "\n";
+		file_pointer << "Benchmark Name, number of points, seed used, stddev, width, height, generation used, densityMap size, elapsed_time (ns), \n";
+	}
+	else {
+		cout << "Error, the file " << filename << "wasn't empty" << endl;
 	}
 }
 
@@ -94,7 +178,7 @@ static vector<int> generation_1(int width, int height, unsigned int n, int seed,
 static vector<int> generation_2(double stddev, unsigned int n, int seed, bool display=false)
 {
 	//normal distribution construction
-	//when using 1 as seed, generate a whole line of 0, don't know why. But work perfectly fine with other seed values
+	//when using n<4 as seed, it generate some patern of 0, don't know why. But work perfectly fine with other seed values
 	default_random_engine generator(seed); //seed of the rng && should reset the seed at it's starting point.
 	normal_distribution<double> distribution (0.0,stddev);
 
@@ -300,11 +384,7 @@ vector<vector<unsigned int>> compute_densityMap_CPU_multThread_2Tabs(vector<T>ta
 
 static void add_Benchmark(string filename, unsigned int n, int seed, double stddev, unsigned int number, int width = -1, int height = -1, bool two_tabs = false)
 {
-	ifstream file_pointer_read;
-	file_pointer_read.open(filename, ios::in);
-	string reading;
-	getline(file_pointer_read, reading);
-	file_pointer_read.close();
+	
 	ofstream file_pointer;
 	/* opens an existing csv file or creates a new file. Every output operation will be push at the end of file.
 		flag in : Open for input operations (reading essentially);
@@ -312,11 +392,6 @@ static void add_Benchmark(string filename, unsigned int n, int seed, double stdd
 		flag app : 	All output operations are performed at the end of the file, appending the content to the current content of the file.
 	*/
 	file_pointer.open(filename, ios::out | ios::app);
-	if (!file_pointer)
-	{
-		cout << "Error in creating file!!! " << filename << endl;
-	}
-	if(reading == "") file_pointer << "Benchmark Name, number of points, seed used, stddev, width, height, generation used, densityMap size, elapsed_time (ns), \n";
 
 	long totalTime = 0;
 	vector<int> point_Array;
@@ -412,22 +487,22 @@ int main() {
   cout << "display Y/N (resp 1/0) :" << endl;
   cin >> answer;
   answer == 0 ? display = false : display = true;*/
-  /*double stddev = 0;
+  double stddev = 0;
   cout << "standard deviation for the normal distribution :" << endl;
   cin >> stddev;
-  string bench_name;*/
+  string bench_name;
 
   /*vector<int> temp1 = generation_1(window_width, window_height, points_nb, seed, display);
   vector<int> temp2 = generation_2(stddev, points_nb, seed, display);*/
 
   /* getting the date for naming the file */
-  /*stringstream ss;
+  stringstream ss;
   ss << "bench_" << return_current_time_and_date_as_string() << ".csv";
   string filename = ss.str();
+  init_file_with_spec(filename);
+  add_Benchmark(filename, points_nb, seed, stddev, 5);
 
-  add_Benchmark(filename, points_nb, seed, stddev, 30);*/
-
-  hello_World_OpenMP(4);
+  //hello_World_OpenMP(4);
 
   /*add_Benchmark(filename, points_nb, seed, stddev, 1, window_width, window_height, true);
   add_Benchmark(filename, points_nb, seed, stddev, 1);
