@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <ctime>
 #include <Windows.h>
+#include <omp.h>
 
 #include <GLFW/glfw3.h>
 
@@ -24,13 +25,15 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-static void hello_World_OpenMp(unsigned int n_thread) {
+/* This fonction is only here as debug purpose. Check if OpenMP work (call it on the main)*/
+static void hello_World_OpenMp() {
 
-	//omp_set_num_threads(n_thread);
+	unsigned int n_thread = omp_get_max_threads();
+	omp_set_num_threads(n_thread);
 
 	#pragma omp parallel for
 	for (int i = 0; i < 4; i++) {
-		//cout << "thread numéros : " << omp_thread_num() << endl;
+		cout << "thread numéros : " << omp_get_thread_num() << endl;
 	}
 }
 
@@ -468,6 +471,8 @@ int main() {
   float x[] = {1,2,3};
   float y[] = {1,2,3};
 
+  //hello_World_OpenMp();
+
   /* ALL_PARAMS of the speed test. */
   cout << "the test will have the following params :" << endl;
   int points_nb=0;
@@ -501,8 +506,6 @@ int main() {
   string filename = ss.str();
   init_file_with_spec(filename);
   add_Benchmark(filename, points_nb, seed, stddev, 5);
-
-  //hello_World_OpenMP(4);
 
   /*add_Benchmark(filename, points_nb, seed, stddev, 1, window_width, window_height, true);
   add_Benchmark(filename, points_nb, seed, stddev, 1);
