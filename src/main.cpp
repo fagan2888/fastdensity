@@ -258,6 +258,7 @@ vector<unsigned int> compute_densityMap_CPU_multThread_1Tab(vector<T>tab, T maxX
 		tab[i] = round(((double)tab[i] / (double)Xrange) * (mapSize - 1));
 		tab[i + 1] = round(((double)tab[i + 1] / (double)Yrange) * (mapSize - 1));
 	}
+	#pragma omp critical
 	for (unsigned int i = 0; i < point_nb*2; i += 2) {
 		densityMap[tab[i] * mapSize + tab[i+1]]++;
 	}
@@ -303,6 +304,7 @@ vector<unsigned int> compute_densityMap_CPU_multThread_2Tabs(vector<T>tabX, vect
 		tabX[i] = round(((double)tabX[i] / (double)Xrange) * (mapSize - 1));
 		tabY[i] = round(((double)tabY[i] / (double)Yrange) * (mapSize - 1));
 	}
+	#pragma omp critical
 	for (int i = 0; i < point_nb; i++) {
 		densityMap[tabY[i] * mapSize + tabX[i]]++;
 	}
@@ -331,7 +333,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 		flag out : Open for output operations.
 		flag app : 	All output operations are performed at the end of the file, appending the content to the current content of the file.
 	*/
-	file_pointer.open(filename, ios::out | ios::app);
+	file_pointer.open(filename, ios::app);
 
 	long totalTime = 0;
 	vector<int> point_Array;
@@ -386,7 +388,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 					totalTime += elapsed_time;
 					//Insert data to file filename
 					std::cout << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << endl;
-					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time;
+					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << "\n";
 				}
 				else {
 					auto start = chrono::steady_clock::now();
@@ -397,7 +399,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 					totalTime += elapsed_time;
 					//Insert data to file filename
 					std::cout << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << endl;
-					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time;
+					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << "\n";
 				}
 				break;
 
@@ -412,7 +414,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 					totalTime += elapsed_time;
 					//Insert data to file filename
 					std::cout << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << endl;
-					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time;
+					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << "\n";
 				}
 				else {
 					auto start = chrono::steady_clock::now();
@@ -423,7 +425,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 					totalTime += elapsed_time;
 					//Insert data to file filename
 					std::cout << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << endl;
-					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time;
+					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << "\n";
 				}
 				break;
 
@@ -438,7 +440,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 					totalTime += elapsed_time;
 					//Insert data to file filename
 					std::cout << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << endl;
-					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time;
+					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << "\n";
 				}
 				else {
 					auto start = chrono::steady_clock::now();
@@ -449,7 +451,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 					totalTime += elapsed_time;
 					//Insert data to file filename
 					std::cout << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << endl;
-					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time;
+					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << "\n";
 				}
 				break;
 		}
@@ -467,7 +469,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 
 /* Used for launching every entry of the benchmark */
 
-static void create_Benchmark(string filename, bool two_tabs = false) {
+static void create_Benchmark(string filename, unsigned int number, bool two_tabs = false) {
 
 	string CPU = "";
 	string CPU_nb = "";
@@ -544,10 +546,15 @@ static void create_Benchmark(string filename, bool two_tabs = false) {
 		cout << "Error, the file " << filename << "wasn't empty" << endl;
 	}
 
+	file_pointer.close();
+
 	/* launch every entry */
-	one_entry_benchmark(filename, 1, 10, two_tabs);
-	one_entry_benchmark(filename, 2, 10, two_tabs);
-	one_entry_benchmark(filename, 3, 10, two_tabs);
+	one_entry_benchmark(filename, 1, number, two_tabs);
+	one_entry_benchmark(filename, 2, number, two_tabs);
+	one_entry_benchmark(filename, 3, number, two_tabs);
+	one_entry_benchmark(filename, 1, number, !two_tabs);
+	one_entry_benchmark(filename, 2, number, !two_tabs);
+	one_entry_benchmark(filename, 3, number, !two_tabs);
 }
 
 boolean full_test_tab_equality() {
@@ -599,7 +606,7 @@ boolean full_test_tab_equality() {
 	/*densityMap_tested = compute_densityMap_GPU_2Tabs(point_ArrayX, point_ArrayY, maxX, minX, maxY, minY);
 	if (!isEqual_2DArray(densityMap_reference, densityMap_tested)) { cout << "GPU density with 2 tabs generation isn't equal to basic generation" << endl; return false; }*/
 
-
+	return true;
 }
 
 
@@ -611,9 +618,9 @@ int main() {
   //hello_World_OpenMp();
 
   if (!full_test_tab_equality()) {
-	  cout << "----------------------------" << endl
+	  cout << "-----------------------------------------" << endl
 		   << " /!\\ Equality tests aren't validated /!\\ " << endl
-		   << "----------------------------" << endl;
+		   << "-----------------------------------------" << endl;
   }
 
   /* ALL_PARAMS of the speed test. */
@@ -637,7 +644,7 @@ int main() {
   stringstream ss;
   ss << "bench_" << return_current_time_and_date_as_string() << ".csv";
   string filename = ss.str();
-  create_Benchmark(filename);
+  create_Benchmark(filename, 50);
 
   /*add_Benchmark(filename, points_nb, seed, stddev, 1, window_width, window_height, true);
   add_Benchmark(filename, points_nb, seed, stddev, 1);
