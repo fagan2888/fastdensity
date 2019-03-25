@@ -10,7 +10,9 @@
 #include <string>
 #include <algorithm>
 #include <ctime>
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include <omp.h>
 
 #include <GLFW/glfw3.h>
