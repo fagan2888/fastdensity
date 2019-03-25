@@ -195,26 +195,26 @@ static vector<int> generation_2(unsigned int seeds=seed, bool display=false)
 
 /*
 DEBUG FUNCTION
-display a 2 dimensional array given as param on the standard output
+display a square 2 dimensional array given as param as a 1 dimensionnal one on the standard output; work for density maps with mapSize size
 */
 template< typename T >
-static void display_2Darray(vector<vector<T>> tab) {
+static void display_2Darray(vector<T> tab) {
 
 	cout << endl;
 
-	for (unsigned int i = 0; i < tab.size(); i++) {
-		for (unsigned int j = 0; j < tab[i].size(); j++) {
-			cout << tab[i][j] << " | ";
+	for (unsigned int i = 0; i < mapSize; i++) {
+		for (unsigned int j = 0; j < mapSize; j++) {
+			cout << tab[i*mapSize+j] << " | ";
 		}
 		cout << endl;
 	}
 }
 
 template< typename T >
-static boolean isEqual_2DArray(vector<vector<T>> tab1, vector<vector<T>> tab2) {
-	for (unsigned int i = 0; i < tab1.size(); i++) {
-		for (unsigned int j = 0; j < tab1[i].size(); j++) {
-			if (tab1[i][j] != tab2[i][j]) { return false; }
+static boolean isEqual_2DArray(vector<T> tab1, vector<T> tab2) {
+	for (unsigned int i = 0; i < mapSize; i++) {
+		for (unsigned int j = 0; j < mapSize; j++) {
+			if (tab1[i*mapSize+j] != tab2[i*mapSize+j]) { return false; }
 		}
 	}
 	return true;
@@ -232,24 +232,23 @@ static boolean isEqual_2DArray(vector<vector<T>> tab1, vector<vector<T>> tab2) {
  * compute_densityMap_CPU_multThread_1Tab do the same with a bit of multi threading
  */
 template< typename T >
-vector<vector<unsigned int>> compute_densityMap_CPU_simple_1Tab(vector<T>tab, T maxX, T minX, T maxY, T minY) {
-	vector<vector<unsigned int>> densityMap(mapSize, vector<unsigned int>(mapSize));
+vector<unsigned int> compute_densityMap_CPU_simple_1Tab(vector<T>tab, T maxX, T minX, T maxY, T minY) {
+	vector<unsigned int> densityMap(mapSize*mapSize);
 	T Xrange = maxX - minX;
 	T Yrange = maxY - minY;
-	double tempX, tempY;
 	for (unsigned int i = 0; i < point_nb*2; i+=2) {
 		tab[i] = tab[i] + minX * (-1);
 		tab[i + 1] = tab[i + 1] + minY * (-1);
-		tempX = round(((double)tab[i] / (double)Xrange) * (mapSize-1));
-		tempY = round(((double)tab[i+1] /(double)Yrange) * (mapSize-1));
-		densityMap[tempX][tempY]++;
+		tab[i] = round(((double)tab[i] / (double)Xrange) * (mapSize-1));
+		tab[i + 1] = round(((double)tab[i+1] /(double)Yrange) * (mapSize-1));
+		densityMap[tab[i]*mapSize + tab[i+1]]++;
 	}
 	return densityMap;
 }
 
 template< typename T >
-vector<vector<unsigned int>> compute_densityMap_CPU_multThread_1Tab(vector<T>tab, T maxX, T minX, T maxY, T minY) {
-	vector<vector<unsigned int>> densityMap(mapSize, vector<unsigned int>(mapSize));
+vector<unsigned int> compute_densityMap_CPU_multThread_1Tab(vector<T>tab, T maxX, T minX, T maxY, T minY) {
+	vector<unsigned int> densityMap(mapSize*mapSize);
 	T Xrange = maxX - minX;
 	T Yrange = maxY - minY;
 	#pragma omp parallel for
@@ -259,8 +258,8 @@ vector<vector<unsigned int>> compute_densityMap_CPU_multThread_1Tab(vector<T>tab
 		tab[i] = round(((double)tab[i] / (double)Xrange) * (mapSize - 1));
 		tab[i + 1] = round(((double)tab[i + 1] / (double)Yrange) * (mapSize - 1));
 	}
-	for (int i = 0; i < point_nb*2; i += 2) {
-		densityMap[tab[i]][tab[i+1]]++;
+	for (unsigned int i = 0; i < point_nb*2; i += 2) {
+		densityMap[tab[i] * mapSize + tab[i+1]]++;
 	}
 	return densityMap;
 }
@@ -278,8 +277,8 @@ vector<vector<unsigned int>> compute_densityMap_CPU_multThread_1Tab(vector<T>tab
  * compute_densityMap_CPU_multThread_2Tabs do the same with a bit of multi threading
  */
 template< typename T >
-vector<vector<unsigned int>> compute_densityMap_CPU_simple_2Tabs(vector<T>tabX, vector<T>tabY, T maxX, T minX, T maxY, T minY) {
-	vector<vector<unsigned int>> densityMap(mapSize, vector<unsigned int>(mapSize));
+vector<unsigned int> compute_densityMap_CPU_simple_2Tabs(vector<T>tabX, vector<T>tabY, T maxX, T minX, T maxY, T minY) {
+	vector<unsigned int> densityMap(mapSize*mapSize);
 	T Xrange = maxX - minX;
 	T Yrange = maxY - minY;
 	for (unsigned int i = 0; i < point_nb; i ++) {
@@ -287,14 +286,14 @@ vector<vector<unsigned int>> compute_densityMap_CPU_simple_2Tabs(vector<T>tabX, 
 		tabY[i] = tabY[i] + minY * (-1);
 		tabX[i] = round(((double)tabX[i] / (double)Xrange) * (mapSize - 1));
 		tabY[i] = round(((double)tabY[i] / (double)Yrange) * (mapSize - 1));
-		densityMap[tabX[i]][tabY[i]]++;
+		densityMap[tabY[i] * mapSize + tabX[i]]++;
 	}
 	return densityMap;
 }
 
 template< typename T >
-vector<vector<unsigned int>> compute_densityMap_CPU_multThread_2Tabs(vector<T>tabX, vector<T>tabY, T maxX, T minX, T maxY, T minY) {
-	vector<vector<unsigned int>> densityMap(mapSize, vector<unsigned int>(mapSize));
+vector<unsigned int> compute_densityMap_CPU_multThread_2Tabs(vector<T>tabX, vector<T>tabY, T maxX, T minX, T maxY, T minY) {
+	vector<unsigned int> densityMap(mapSize*mapSize);
 	T Xrange = maxX - minX;
 	T Yrange = maxY - minY;
 	#pragma omp parallel for
@@ -305,7 +304,7 @@ vector<vector<unsigned int>> compute_densityMap_CPU_multThread_2Tabs(vector<T>ta
 		tabY[i] = round(((double)tabY[i] / (double)Yrange) * (mapSize - 1));
 	}
 	for (int i = 0; i < point_nb; i++) {
-		densityMap[tabX[i]][tabY[i]]++;
+		densityMap[tabY[i] * mapSize + tabX[i]]++;
 	}
 	return densityMap;
 }
@@ -338,7 +337,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 	vector<int> point_Array;
 	vector<int> point_ArrayX;
 	vector<int> point_ArrayY;
-	vector<vector<unsigned int>> densityMap;
+	vector<unsigned int> densityMap;
 	unsigned int seeds = seed;
 	string generation = "";
 	string entry_name = "";
@@ -555,8 +554,8 @@ boolean full_test_tab_equality() {
 	vector<int> point_Array;
 	vector<int> point_ArrayX;
 	vector<int> point_ArrayY;
-	vector<vector<unsigned int>> densityMap_reference;
-	vector<vector<unsigned int>> densityMap_tested;
+	vector<unsigned int> densityMap_reference;
+	vector<unsigned int> densityMap_tested;
 
 	point_Array = generation_2();
 
@@ -596,7 +595,7 @@ boolean full_test_tab_equality() {
 
 	densityMap_reference = compute_densityMap_CPU_simple_2Tabs(point_ArrayX, point_ArrayY, maxX, minX, maxY, minY);
 	densityMap_tested = compute_densityMap_CPU_multThread_2Tabs(point_ArrayX, point_ArrayY, maxX, minX, maxY, minY);
-	if (!isEqual_2DArray(densityMap_reference, densityMap_tested)) { cout << "multi threaded density with 2 tabs generation isn't equal to basic generation" << endl; return false; }
+	if (!isEqual_2DArray(densityMap_reference, densityMap_tested)) { cout << "multi threaded density with 2 tabs generation isn't equal to basic generation" << endl; display_2Darray(densityMap_reference); display_2Darray(densityMap_tested);  return false; }
 	/*densityMap_tested = compute_densityMap_GPU_2Tabs(point_ArrayX, point_ArrayY, maxX, minX, maxY, minY);
 	if (!isEqual_2DArray(densityMap_reference, densityMap_tested)) { cout << "GPU density with 2 tabs generation isn't equal to basic generation" << endl; return false; }*/
 
