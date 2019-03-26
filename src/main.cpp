@@ -448,8 +448,8 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 
 	totalTime = totalTime / number;
 
-	std::cout << "Mean_On_" << to_string(number) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << totalTime << endl;
-	file_pointer << "Mean_On_" << to_string(number) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << totalTime << "\n";
+	std::cout << "\n" << "Mean_On_" << to_string(number) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << totalTime << endl;
+	file_pointer << "\n" << "Mean_On_" << to_string(number) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << totalTime << "\n" << "\n";
 
 	file_pointer.close();
 }
@@ -628,7 +628,7 @@ int main() {
   stringstream ss;
   ss << "bench_" << return_current_time_and_date_as_string() << ".csv";
   string filename = ss.str();
-  create_Benchmark(filename, 10);
+  create_Benchmark(filename, 100);
   
   /* opengl and GLFW tests */
   //if (GLFW_testing_zone(generation_2()) != 0) { cout << "problems with GLFW stuff" << endl; return -1; }
