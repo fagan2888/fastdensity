@@ -69,8 +69,6 @@ static string return_current_time_and_date_as_string() {
 /*	Generation_1 :
  *		Generate a tab filled with random points placed in a closed box
  *	@params : 
- *		width & heigth ; the limit of the box where points will be generate
- *		n ; number of points that should be generated
  *		seed ; the seed wanted for the random number generation, will refresh it
  *  @return :
  *		A 1 dimensional array of int, with all the even indexes are the x value of the point and all the odd indexes are the y value of it
@@ -100,8 +98,6 @@ static vector<int> generation_1(unsigned int seeds=seed, bool display=false)
 /*	Generation_2 :
  *		Generate a tab filled with random points following a normal distribution (gaussian) with mean = 0
  *	@params :
- *		stddev ; the standard deviation that'll follow the distribution
- *		n ; number of points that should be generated
  *		seed ; the seed wanted for the random number generation, will refresh it
  *  @return :
  *		A 1 dimensional array of int, with all the even indexes are the x value of the point and all the odd indexes are the y value of it
@@ -130,68 +126,6 @@ static vector<int> generation_2(unsigned int seeds=seed, bool display=false)
 	}
 	return point_Array;
 }
-
-/*	Generation_1_Simple_Array :
- *		Generate a tab filled with random values between 0 and limit
- *	@params :
- *		limit ; the maximum a point randomly generated can achieved
- *		n ; number of values that should be generated
- *		seed ; the seed wanted for the random number generation, will refresh it
- *  @return :
- *		A 1 dimensional array of int
- */
-
-/*static vector<int> generation_1_Simple_Array(int limit, unsigned int n, int seed, bool display = false)
-{
-	vector<int> point_Array;
-	srand(seed); //seed of the rng && should reset the seed at it's starting point.
-
-	// array generation
-	for (unsigned int i = 0; i < n; i++) {
-		point_Array.push_back(rand() % (limit + 1));
-	}
-
-	// array display
-	if (display) {
-		for (unsigned int i = 0; i < n; i++) {
-			cout << "le point " << i << " à comme valeurs en X : " << point_Array[i] << endl;
-		}
-	}
-	return point_Array;
-}*/
-
-
-/*	Generation_2_Simple_Array :
- *		Generate a tab filled with random values for points following a normal distribution (gaussian) with mean = 0
- *	@params :
- *		stddev ; the standard deviation that'll follow the distribution
- *		n ; number of values that should be generated
- *		seed ; the seed wanted for the random number generation, will refresh it
- *  @return :
- *		A 1 dimensional array of int, of size n
- */
-
-/*static vector<int> generation_2_Simple_Array (double stddev, unsigned int n, int seed, bool display = false)
-{
-	//normal distribution construction
-	default_random_engine generator(seed); //seed of the rng && should reset the seed at it's starting point.
-	normal_distribution<double> distribution(0.0, stddev);
-
-	vector<int> point_Array;
-
-	// array generation
-	for (unsigned int i = 0; i < n; i++) {
-		point_Array.push_back(ceil(distribution(generator)));
-	}
-
-	// array display
-	if (display) {
-		for (unsigned int i = 0; i < n; i ++) {
-			cout << "le point " << i << " à comme valeurs en X ou Y : " << point_Array[i] << endl;
-		}
-	}
-	return point_Array;
-}*/
 
 /*
 DEBUG FUNCTION
@@ -225,7 +159,6 @@ static boolean isEqual_2DArray(vector<T> tab1, vector<T> tab2) {
  * @params :
  *	tab : A 1 dimensional array of number, with all the even indexes are the x value of the point and all the odd indexes are the y value of it
  *  maxX, maxY, minX, minY : the  global extremums of the tab array
- *  mapSize : the size of density map wanted, (if 256 then the density map will generated will be 256^2
  * @return :
  *	the densityMap
  *
@@ -236,12 +169,13 @@ vector<unsigned int> compute_densityMap_CPU_simple_1Tab(vector<T>tab, T maxX, T 
 	vector<unsigned int> densityMap(mapSize*mapSize);
 	T Xrange = maxX - minX;
 	T Yrange = maxY - minY;
+	unsigned int tempX, tempY;
 	for (unsigned int i = 0; i < point_nb*2; i+=2) {
 		tab[i] = tab[i] + minX * (-1);
 		tab[i + 1] = tab[i + 1] + minY * (-1);
-		tab[i] = round(((double)tab[i] / (double)Xrange) * (mapSize-1));
-		tab[i + 1] = round(((double)tab[i+1] /(double)Yrange) * (mapSize-1));
-		densityMap[tab[i]*mapSize + tab[i+1]]++;
+		tempX = round(((double)tab[i] / (double)Xrange) * (mapSize-1));
+		tempY = round(((double)tab[i+1] /(double)Yrange) * (mapSize-1));
+		densityMap[tempX*mapSize + tempY]++;
 	}
 	return densityMap;
 }
@@ -282,12 +216,13 @@ vector<unsigned int> compute_densityMap_CPU_simple_2Tabs(vector<T>tabX, vector<T
 	vector<unsigned int> densityMap(mapSize*mapSize);
 	T Xrange = maxX - minX;
 	T Yrange = maxY - minY;
+	unsigned int tempX, tempY;
 	for (unsigned int i = 0; i < point_nb; i ++) {
 		tabX[i] = tabX[i] + minX * (-1);
 		tabY[i] = tabY[i] + minY * (-1);
-		tabX[i] = round(((double)tabX[i] / (double)Xrange) * (mapSize - 1));
-		tabY[i] = round(((double)tabY[i] / (double)Yrange) * (mapSize - 1));
-		densityMap[tabY[i] * mapSize + tabX[i]]++;
+		tempX = round(((double)tabX[i] / (double)Xrange) * (mapSize - 1));
+		tempY = round(((double)tabY[i] / (double)Yrange) * (mapSize - 1));
+		densityMap[tempX * mapSize + tempY]++;
 	}
 	return densityMap;
 }
@@ -306,7 +241,7 @@ vector<unsigned int> compute_densityMap_CPU_multThread_2Tabs(vector<T>tabX, vect
 	}
 	#pragma omp critical
 	for (int i = 0; i < point_nb; i++) {
-		densityMap[tabY[i] * mapSize + tabX[i]]++;
+		densityMap[tabX[i] * mapSize + tabY[i]]++;
 	}
 	return densityMap;
 }
@@ -394,6 +329,9 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 	string entry_name = "";
 
 	for (unsigned int nb = 0; nb < number; nb++) {
+		point_ArrayX.clear();
+		point_ArrayY.clear();
+
 		/* Changing the seed for every loop, used for forcing new data on cache.
 			I choose this way of changing the seed for keeping the same seed for future calcul process.
 			Will probably need a preload of every points on the cache for equalise the calcul process.
@@ -648,7 +586,6 @@ boolean full_test_tab_equality() {
 		point_ArrayX.push_back(point_Array[i]);
 		point_ArrayY.push_back(point_Array[i + 1]);
 	}
-
 	densityMap_reference = compute_densityMap_CPU_simple_2Tabs(point_ArrayX, point_ArrayY, maxX, minX, maxY, minY);
 	densityMap_tested = compute_densityMap_CPU_multThread_2Tabs(point_ArrayX, point_ArrayY, maxX, minX, maxY, minY);
 	if (!isEqual_2DArray(densityMap_reference, densityMap_tested)) { cout << "multi threaded density with 2 tabs generation isn't equal to basic generation" << endl; display_2Darray(densityMap_reference); display_2Darray(densityMap_tested);  return false; }
@@ -694,5 +631,7 @@ int main() {
   create_Benchmark(filename, 10);
   
   /* opengl and GLFW tests */
-  if (GLFW_testing_zone(generation_2()) != 0) { cout << "problems with GLFW stuff" << endl; return -1; }
+  //if (GLFW_testing_zone(generation_2()) != 0) { cout << "problems with GLFW stuff" << endl; return -1; }
+
+  return 0;
 }
