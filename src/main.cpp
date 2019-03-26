@@ -311,9 +311,58 @@ vector<unsigned int> compute_densityMap_CPU_multThread_2Tabs(vector<T>tabX, vect
 	return densityMap;
 }
 
-/*	@temporary
- *  add_Benchmark :
- *		Create an entry in a CSV file that contain the whole information about the execution of a Benchmark
+template< typename T >
+static int GLFW_testing_zone(vector<T>tab) {
+	/* opengl and GLFW tests */
+	if (!glfwInit()) { cout << "GLFW failed at initialisation" << endl; return -1; }
+
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	GLFWwindow* window = glfwCreateWindow(600, 320, "Hello World", NULL, NULL);
+	if (!window) {
+		glfwTerminate();
+		cout << "GLFW window creation failed" << endl;
+		return -1;
+	}
+
+	glfwSetKeyCallback(window, key_callback);
+	glfwMakeContextCurrent(window);
+	glfwSwapInterval(1);
+	glViewport(0, 0, 800, 600);
+	/* Get opengl resources from now */
+
+	/* Loop until the user closes the window */
+	while (!glfwWindowShouldClose(window)) {
+		/* Render here */
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		float vertices[] = {
+			-0.5f, -0.5f, 0.0f,
+			 0.5f, -0.5f, 0.0f,
+			 0.0f,  0.5f, 0.0f
+		};
+
+		unsigned int VBO;
+		glGenBuffers(1, &VBO);
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		
+
+		/* Swap front and back buffers */
+		glfwSwapBuffers(window);
+
+		/* Poll for and process events */
+		glfwPollEvents();
+	}
+
+	glfwTerminate();
+	return 0;
+}
+
+/*	
+ *  one_entry_benchmark :
+ *		Create an entry in a CSV file that contain the whole information about the execution of one type execution
  *		For the Moment, just getting informations for creating an array of point following one of both génération. Then making some calulation with the array,
  *		finally store the result in a CSV file.
  *		In future should only take the pre calculated array as paramaters.
@@ -637,51 +686,13 @@ int main() {
   answer == 0 ? display = false : display = true;*/
   string bench_name;
 
-  /*vector<int> temp1 = generation_1(window_width, window_height, points_nb, seed, display);
-  vector<int> temp2 = generation_2(stddev, points_nb, seed, display);*/
 
   /* getting the date for naming the file */
   stringstream ss;
   ss << "bench_" << return_current_time_and_date_as_string() << ".csv";
   string filename = ss.str();
-  create_Benchmark(filename, 50);
-
-  /*add_Benchmark(filename, points_nb, seed, stddev, 1, window_width, window_height, true);
-  add_Benchmark(filename, points_nb, seed, stddev, 1);
-  add_Benchmark(filename, points_nb, seed, stddev, 1, window_width, window_height, true);*/
+  create_Benchmark(filename, 10);
   
-
-  /*auto start = chrono::steady_clock::now();
-  ff.add(3, x, y);
-  auto end = chrono::steady_clock::now();
-  auto diff = end - start;
-  cout << chrono::duration <double, nano> (diff).count() << " ns" << endl;
-  */
-  if (!glfwInit())
-    return -1;
-
-  GLFWwindow* window = glfwCreateWindow(640, 360, "Hello World", NULL, NULL);
-  if (!window) {
-    glfwTerminate();
-    return -1;
-  }
-
-  glfwSetKeyCallback(window, key_callback);
-  glfwMakeContextCurrent(window);
-  /* Get opengl resources from now */
-
-  /* Loop until the user closes the window */
-  while (!glfwWindowShouldClose(window)) {
-    /* Render here */
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    /* Swap front and back buffers */
-    glfwSwapBuffers(window);
-
-    /* Poll for and process events */
-    glfwPollEvents();
-  }
-
-  glfwTerminate();
-  return 0;
+  /* opengl and GLFW tests */
+  if (GLFW_testing_zone(generation_2()) != 0) { cout << "problems with GLFW stuff" << endl; return -1; }
 }
