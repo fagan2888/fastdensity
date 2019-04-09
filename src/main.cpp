@@ -257,19 +257,20 @@ vector<unsigned int> compute_densityMap_CPU_multThread_2Tabs(vector<T>tabX, vect
 template< typename T >
 static int GLFW_testing_zone(vector<T>tab) {
 
-	//initiate the Shaders with opengl 3.2
+	//initiate the Shaders with opengl 3.3
 
-	const char *vertexShaderSource = "#version 330 \n"
-		"layout (location = 0) in vec3 aPos;\n"
+	const char *vertexShaderSourcePoints = "#version 330 \n"
+		"layout (location = 0) in vec2 aPos;\n"
+		"uniform vec2 ranges;\n"
 		"void main()\n"
 		"{\n"
-		"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+		"   gl_Position = vec4(aPos.x / ranges.x, aPos.y / ranges.y, 0.0, 1.0);\n"
 		"}\0";
 	const char *fragmentShaderSource = "#version 330 \n"
 		"out vec4 FragColor;\n"
 		"void main()\n"
 		"{\n"
-		"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+		"   FragColor = vec4(0.5, 0.5, 0.5, 1.0);\n"
 		"}\n\0";
 	
 	/* opengl and GLFW initialisation */
@@ -289,7 +290,6 @@ static int GLFW_testing_zone(vector<T>tab) {
 
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
-	glViewport(0, 0, 800, 600);
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
@@ -307,7 +307,7 @@ static int GLFW_testing_zone(vector<T>tab) {
 	// ------------------------------------
 	// vertex shader
 	int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	glShaderSource(vertexShader, 1, &vertexShaderSourcePoints, NULL);
 	glCompileShader(vertexShader);
 	// check for shader compile errors
 	int success;
@@ -346,11 +346,25 @@ static int GLFW_testing_zone(vector<T>tab) {
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
-	float vertices[] = {
-		-0.5f, -0.5f, 0.0f, // left  
-		 0.5f, -0.5f, 0.0f, // right 
-		 0.0f,  0.5f, 0.0f  // top   
-	};
+	//determining the min X & Y, the max X & Y of the given array and creating the corresponding vertices.
+	vector<GLfloat> vertexPositions;
+	int maxY = tab[0], maxX = tab[0], minY = tab[0], minX = tab[0];
+	for (unsigned int i = 0; i < point_nb * 2; i += 2) {
+		if (tab[i] < minX) { minX = tab[i]; }
+		else if (tab[i] > maxX) { maxX = tab[i]; }
+		if (tab[i + 1] < minY) { minY = tab[i + 1]; }
+		else if (tab[i + 1] > maxY) { maxY = tab[i + 1]; }
+		vertexPositions.push_back(GLfloat(tab[i]));
+		vertexPositions.push_back(GLfloat(tab[i + 1]));
+	}
+	int rangeX = maxX - minX;
+	int rangeY = maxY - minY;
+
+	// update shader uniform for normalizing points given in
+	int vertexColorLocation = glGetUniformLocation(shaderProgram, "ranges");
+	if (vertexColorLocation == -1) { "couldn't link uniform and programs"; return -1; }
+	glUseProgram(shaderProgram);
+	glUniform2f(vertexColorLocation, GLfloat(rangeX), GLfloat(rangeY));
 
 	// VBO = Vertex Buffer Object ___ VAO = Vertex Array Object
 	unsigned int VBO, VAO;
@@ -360,9 +374,10 @@ static int GLFW_testing_zone(vector<T>tab) {
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertexPositions.size() * sizeof(GLfloat), &vertexPositions[0], GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
 	glEnableVertexAttribArray(0);
 
 	// note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
@@ -375,13 +390,13 @@ static int GLFW_testing_zone(vector<T>tab) {
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window)) {
 		/* Render here */
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// draw the triangle
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_POINTS, 0, point_nb);
 		glBindVertexArray(0); // no need to unbind it every time but, do it anyway
 
 		/* Swap front and back buffers */
