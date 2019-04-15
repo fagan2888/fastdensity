@@ -317,6 +317,7 @@ static int GLFW_testing_zone(vector<T>tab) {
 	{
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+		return -1;
 	}
 	// fragment shader
 	int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -328,6 +329,7 @@ static int GLFW_testing_zone(vector<T>tab) {
 	{
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+		return -1;
 	}
 	// link shaders
 	int shaderProgram = glCreateProgram();
@@ -339,6 +341,7 @@ static int GLFW_testing_zone(vector<T>tab) {
 	if (!success) {
 		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+		return -1;
 	}
 	// once the link is done, we don't need the shaders anymore, so we delete them.
 	glDeleteShader(vertexShader);
@@ -347,24 +350,24 @@ static int GLFW_testing_zone(vector<T>tab) {
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
 	//determining the min X & Y, the max X & Y of the given array and creating the corresponding vertices.
-	vector<GLfloat> vertexPositions;
+	vector<float> vertexPositions;
 	int maxY = tab[0], maxX = tab[0], minY = tab[0], minX = tab[0];
 	for (unsigned int i = 0; i < point_nb * 2; i += 2) {
 		if (tab[i] < minX) { minX = tab[i]; }
 		else if (tab[i] > maxX) { maxX = tab[i]; }
 		if (tab[i + 1] < minY) { minY = tab[i + 1]; }
 		else if (tab[i + 1] > maxY) { maxY = tab[i + 1]; }
-		vertexPositions.push_back(GLfloat(tab[i]));
-		vertexPositions.push_back(GLfloat(tab[i + 1]));
+		vertexPositions.push_back(float(tab[i]));
+		vertexPositions.push_back(float(tab[i + 1]));
 	}
-	int rangeX = maxX - minX;
-	int rangeY = maxY - minY;
+	float rangeX = maxX - minX;
+	float rangeY = maxY - minY;
 
 	// update shader uniform for normalizing points given in
 	int vertexColorLocation = glGetUniformLocation(shaderProgram, "ranges");
-	if (vertexColorLocation == -1) { "couldn't link uniform and programs"; return -1; }
+	if (vertexColorLocation == -1) { std::cout << "couldn't link uniform and programs" << std::endl; return -1; }
 	glUseProgram(shaderProgram);
-	glUniform2f(vertexColorLocation, GLfloat(rangeX), GLfloat(rangeY));
+	glUniform2f(vertexColorLocation, rangeX, rangeY);
 
 	// VBO = Vertex Buffer Object ___ VAO = Vertex Array Object
 	unsigned int VBO, VAO;
@@ -387,6 +390,18 @@ static int GLFW_testing_zone(vector<T>tab) {
 	// VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
 	glBindVertexArray(0);
 
+	/* Creating and binding a new framebuffer for off screen rendering */
+	unsigned int fbo;
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	//creating a render buffer 
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, mapSize, mapSize);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){ std::cout << "unsuccesfull completion in off screen rendering buffer creation" << std::endl; return -1; }
+
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window)) {
 		/* Render here */
@@ -405,13 +420,25 @@ static int GLFW_testing_zone(vector<T>tab) {
 		/* Poll for and process events */
 		glfwPollEvents();
 	}
+	/* Recovering the pixels from the buffer*/
+	GLint data[32 * 32 * 1];
+	glReadPixels(0, 0, mapSize, mapSize, GL_RED, GL_INT, data);
 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	// de-allocate all resources once they've outlived their purpose:
 	// ------------------------------------------------------------------------
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-
+	glDeleteFramebuffers(1, &fbo);
 	glfwTerminate();
+
+	vector<int> temp;
+	for (int i = 0; i < mapSize; i++) {
+		for (int j = 0; j < mapSize; j++) {
+			temp.push_back(data[j*mapSize + i]);
+		}
+	}
+	display_2Darray(temp);
 	return 0;
 }
 
