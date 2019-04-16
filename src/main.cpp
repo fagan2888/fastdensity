@@ -270,7 +270,7 @@ static int GLFW_testing_zone(vector<T>tab) {
 		"out vec4 FragColor;\n"
 		"void main()\n"
 		"{\n"
-		"   FragColor = vec4(0.5, 0.5, 0.5, 1.0);\n"
+		"   FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
 		"}\n\0";
 	
 	/* opengl and GLFW initialisation */
@@ -350,19 +350,32 @@ static int GLFW_testing_zone(vector<T>tab) {
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
 	//determining the min X & Y, the max X & Y of the given array and creating the corresponding vertices.
-	vector<float> vertexPositions;
+	/*vector<float> vertexPositions;
 	int maxY = tab[0], maxX = tab[0], minY = tab[0], minX = tab[0];
 	for (unsigned int i = 0; i < point_nb * 2; i += 2) {
 		if (tab[i] < minX) { minX = tab[i]; }
 		else if (tab[i] > maxX) { maxX = tab[i]; }
 		if (tab[i + 1] < minY) { minY = tab[i + 1]; }
 		else if (tab[i + 1] > maxY) { maxY = tab[i + 1]; }
-		vertexPositions.push_back(float(tab[i]));
-		vertexPositions.push_back(float(tab[i + 1]));
 	}
 	float rangeX = maxX - minX;
 	float rangeY = maxY - minY;
 
+	for (unsigned int i = 0; i < point_nb * 2; i += 2) {
+		vertexPositions.push_back(float(tab[i] + minX * (-1)));
+		vertexPositions.push_back(float(tab[i+1] + minY * (-1)));
+	}*/
+
+	//testing READPIXELS
+	vector<float> vertexPositions(32*32);
+	for (unsigned int i = 0; i < 32; i++) {
+		for (unsigned int j = 0; j < 32; j++) {
+			vertexPositions.push_back(i);
+			vertexPositions.push_back(j);
+		}
+	}
+	float rangeX = 32.0;
+	float rangeY = 32.0;
 	// update shader uniform for normalizing points given in
 	int vertexColorLocation = glGetUniformLocation(shaderProgram, "ranges");
 	if (vertexColorLocation == -1) { std::cout << "couldn't link uniform and programs" << std::endl; return -1; }
@@ -398,47 +411,66 @@ static int GLFW_testing_zone(vector<T>tab) {
 	unsigned int rbo;
 	glGenRenderbuffers(1, &rbo);
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, mapSize, mapSize);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, mapSize*2, mapSize*2);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){ std::cout << "unsuccesfull completion in off screen rendering buffer creation" << std::endl; return -1; }
 
+	/* rendering the data */
+	// Render here
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	// draw
+	glUseProgram(shaderProgram);
+	glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
+	//glDrawArrays(GL_POINTS, 0, point_nb*2);
+	glDrawArrays(GL_POINTS, 0, mapSize*mapSize*2);
+	glBindVertexArray(0); // unbind the vertex array
+
+	/* Recovering the pixels from the buffer*/
+	unsigned char data[32 * 32 * 1];
+	glReadPixels(0, 0, mapSize, mapSize, GL_RED, GL_UNSIGNED_INT, data);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDeleteFramebuffers(1, &fbo);
+
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window)) {
-		/* Render here */
+
+		// Render here
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		// draw the triangle
+		// draw
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-		glDrawArrays(GL_POINTS, 0, point_nb);
-		glBindVertexArray(0); // no need to unbind it every time but, do it anyway
+		//glPointSize(10.0);
+		//glDrawArrays(GL_POINTS, 0, point_nb*2);
+		glDrawArrays(GL_POINTS, 0, mapSize*mapSize*2);
+		glBindVertexArray(0); // unbind the vertex array
 
-		/* Swap front and back buffers */
+		// Swap front and back buffers
 		glfwSwapBuffers(window);
 
-		/* Poll for and process events */
+		// Poll for and process events
 		glfwPollEvents();
 	}
-	/* Recovering the pixels from the buffer*/
-	GLint data[32 * 32 * 1];
-	glReadPixels(0, 0, mapSize, mapSize, GL_RED, GL_INT, data);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	// de-allocate all resources once they've outlived their purpose:
 	// ------------------------------------------------------------------------
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
-	glDeleteFramebuffers(1, &fbo);
 	glfwTerminate();
 
-	vector<int> temp;
-	for (int i = 0; i < mapSize; i++) {
-		for (int j = 0; j < mapSize; j++) {
-			temp.push_back(data[j*mapSize + i]);
+	// display the result of off rendering
+	vector<unsigned int> temp (32 * 32 * 1);
+	unsigned int conversion = 4294967295; // 2^32-1
+	for (int j = 0; j < mapSize; j++) {
+		for (int i = 0; i < mapSize; i++) {
+			temp[j*mapSize + i] = data[j*mapSize + i];
 		}
 	}
 	display_2Darray(temp);
+	temp.clear();
 	return 0;
 }
 
