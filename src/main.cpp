@@ -70,7 +70,6 @@ static string return_current_time_and_date_as_string() {
 	string s(30, '\0');
 	strftime(&s[0], s.size(), "%Y-%m-%d_%Hh%Mm%Ss", localtime(&in_time_t));
 	s.erase(remove(s.begin(), s.end(), '\0'), s.end());
-	cout << s << endl;
 	return s;
 }
 
@@ -301,7 +300,7 @@ static int GLFW_testing_zone(vector<T>tab) {
 		glfwTerminate();
 		return -1;
 	}
-	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
+	fprintf(stdout, "Status: Using GLEW %s \n\n", glewGetString(GLEW_VERSION));
 
 	// build and compile our shader program
 	// ------------------------------------
@@ -313,11 +312,14 @@ static int GLFW_testing_zone(vector<T>tab) {
 	int success;
 	char infoLog[512];
 	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success)
+	if (success != GL_TRUE)
 	{
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
 		return -1;
+	}
+	else {
+		std::cout << "SHADER::VERTEX::COMPILATION_SUCCESS\n" << std::endl;
 	}
 	// fragment shader
 	int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -325,11 +327,14 @@ static int GLFW_testing_zone(vector<T>tab) {
 	glCompileShader(fragmentShader);
 	// check for shader compile errors
 	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success)
+	if (success != GL_TRUE)
 	{
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
 		return -1;
+	}
+	else {
+		std::cout << "SHADER::FRAGMENT::COMPILATION_SUCCESS\n" << std::endl;
 	}
 	// link shaders
 	int shaderProgram = glCreateProgram();
@@ -338,10 +343,13 @@ static int GLFW_testing_zone(vector<T>tab) {
 	glLinkProgram(shaderProgram);
 	// check for linking errors
 	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-	if (!success) {
+	if (success != GL_TRUE) {
 		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
 		return -1;
+	}
+	else {
+		std::cout << "SHADER::PROGRAM::LINKING_SUCCESS\n" << std::endl;
 	}
 	// once the link is done, we don't need the shaders anymore, so we delete them.
 	glDeleteShader(vertexShader);
@@ -378,7 +386,8 @@ static int GLFW_testing_zone(vector<T>tab) {
 	float rangeY = 32.0;
 	// update shader uniform for normalizing points given in
 	int vertexColorLocation = glGetUniformLocation(shaderProgram, "ranges");
-	if (vertexColorLocation == -1) { std::cout << "couldn't link uniform and programs" << std::endl; return -1; }
+	if (vertexColorLocation == -1) { std::cout << "couldn't link uniform vertex and programs\n" << std::endl; return -1; }
+	else { std::cout << "link between uniform vertex and programs done\n" << std::endl; }
 	glUseProgram(shaderProgram);
 	glUniform2f(vertexColorLocation, rangeX, rangeY);
 
@@ -390,7 +399,6 @@ static int GLFW_testing_zone(vector<T>tab) {
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glBufferData(GL_ARRAY_BUFFER, vertexPositions.size() * sizeof(GLfloat), &vertexPositions[0], GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (void*)0);
@@ -413,7 +421,8 @@ static int GLFW_testing_zone(vector<T>tab) {
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, mapSize*2, mapSize*2);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){ std::cout << "unsuccesfull completion in off screen rendering buffer creation" << std::endl; return -1; }
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){ std::cout << "unsuccesfull completion in off screen rendering buffer creation\n" << std::endl; return -1; }
+	else { std::cout << "succesfull completion in off screen rendering buffer creation\n" << std::endl; }
 
 	/* rendering the data */
 	// Render here
@@ -424,7 +433,8 @@ static int GLFW_testing_zone(vector<T>tab) {
 	glUseProgram(shaderProgram);
 	glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 	//glDrawArrays(GL_POINTS, 0, point_nb*2);
-	glDrawArrays(GL_POINTS, 0, mapSize*mapSize*2);
+	//glPointSize(10.0);
+	//glDrawArrays(GL_POINTS, 0, mapSize*mapSize*2);
 	glBindVertexArray(0); // unbind the vertex array
 
 	/* Recovering the pixels from the buffer*/
@@ -444,7 +454,7 @@ static int GLFW_testing_zone(vector<T>tab) {
 		// draw
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-		//glPointSize(10.0);
+		glPointSize(10.0);
 		//glDrawArrays(GL_POINTS, 0, point_nb*2);
 		glDrawArrays(GL_POINTS, 0, mapSize*mapSize*2);
 		glBindVertexArray(0); // unbind the vertex array
@@ -464,10 +474,8 @@ static int GLFW_testing_zone(vector<T>tab) {
 	// display the result of off rendering
 	vector<unsigned int> temp (32 * 32 * 1);
 	unsigned int conversion = 4294967295; // 2^32-1
-	for (int j = 0; j < mapSize; j++) {
-		for (int i = 0; i < mapSize; i++) {
-			temp[j*mapSize + i] = data[j*mapSize + i];
-		}
+	for (int j = 0; j < mapSize*mapSize; j++) {
+		temp[j] = data[j];
 	}
 	display_2Darray(temp);
 	temp.clear();
