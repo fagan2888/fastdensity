@@ -708,9 +708,17 @@ static void create_Benchmark(string filename, unsigned int number, bool two_tabs
 	#endif
 	#ifdef _unix_
 		//TODO
+		CPU = "Unix getter not implemented";
+		CPU_nb = "Unix getter not implemented";
+		RAM = "Unix getter not implemented";
+		GPU = "Unix getter not implemented";
 	#endif
 	#ifdef _MACH_
 		//TODO
+		CPU = "MACH getter not implemented";
+		CPU_nb = "MACH getter not implemented";
+		RAM = "MACH getter not implemented";
+		GPU = "MACH getter not implemented";
 	#endif
 
 
