@@ -152,7 +152,7 @@ static void display_2Darray(vector<T> tab) {
 }
 
 template< typename T >
-static boolean isEqual_2DArray(vector<T> tab1, vector<T> tab2) {
+static bool isEqual_2DArray(vector<T> tab1, vector<T> tab2) {
 	for (unsigned int i = 0; i < mapSize; i++) {
 		for (unsigned int j = 0; j < mapSize; j++) {
 			if (tab1[i*mapSize+j] != tab2[i*mapSize+j]) { return false; }
@@ -423,37 +423,57 @@ static int GLFW_testing_zone(vector<T>tab) {
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, mapSize*2, mapSize*2);
 	if ((errors = glGetError()) != GL_NO_ERROR) { std::cout << "erros at RenderBufferStorage for framebuffer : " << gluErrorString(errors) << std::endl; }
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT8, GL_RENDERBUFFER, rbo);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
 	if ((errors = glGetError()) != GL_NO_ERROR) { std::cout << "erros at glFramebufferRenderbuffer for framebuffer : " << gluErrorString(errors) << std::endl; }
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){ std::cout << "unsuccesfull completion in off screen rendering buffer creation\n" << std::endl; return -1; }
 	else { std::cout << "succesfull completion in off screen rendering buffer creation\n" << std::endl; }
 
 	/* rendering the data */
+	std::cout << "rendering in the frambuffer start " << std::endl;
 	// Render here
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// draw
+	std::cout << "drawing start " << std::endl;
 	glUseProgram(shaderProgram);
 	glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 	//glDrawArrays(GL_POINTS, 0, point_nb*2);
 	//glPointSize(10.0);
 	glDrawArrays(GL_POINTS, 0, mapSize*mapSize * 2);
 	glBindVertexArray(0); // unbind the vertex array
-
+	std::cout << "drawing is finished " << std::endl;
 	/* Recovering the pixels from the buffer*/
-	unsigned char data[32 * 32 * 1];
-	glReadPixels(0, 0, mapSize, mapSize, GL_RED, GL_UNSIGNED_INT, data);
+	unsigned char data[32 * 32 * 4];
+	std::cout << "data storage done " << std::endl;
+	glReadPixels(0, 0, mapSize, mapSize, GL_RGBA8, GL_UNSIGNED_INT_8_8_8_8, &data[0]);
+	if ((errors = glGetError()) != GL_NO_ERROR) { std::cout << "erros at glReadPixels : " << gluErrorString(errors) << std::endl; }
+	std::cout << "readPixels is finished " << std::endl;
+
+	cout << "r: " << (int)data[0] << endl;
+	cout << "g: " << (int)data[1] << endl;
+	cout << "b: " << (int)data[2] << endl;
+	cout << "a: " << (int)data[3] << endl;
+	cout << endl;
 
 	// display the result of off rendering
 	vector<unsigned int> temp(32 * 32 * 1);
-	//unsigned int conversion = 4294967295; // 2^32-1
-	for (int j = 0; j < mapSize; j++) {
-		for (int i = 0; i < mapSize; i++) {
+	for (unsigned int j = 0; j < mapSize; j++) {
+		for (unsigned int i = 0; i < mapSize; i ++) {
 			temp[(mapSize - 1 - j)*mapSize + i] = data[j*mapSize + i];
 		}
 	}
 	display_2Darray(temp);
+	temp.clear();
+
+	vector<unsigned int> temp2(32 * 32 * 1);
+	for (unsigned int j = 0; j < mapSize; j++) {
+		for (unsigned int i = 0; i < (mapSize - 1) * 4 + 1; i += 4) {
+			unsigned int index = floor(i / 4);
+			temp2[(mapSize - 1 - j)*mapSize + index] = data[j*mapSize + i];
+		}
+	}
+	display_2Darray(temp2);
 	temp.clear();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -737,7 +757,7 @@ static void create_Benchmark(string filename, unsigned int number, bool two_tabs
 	one_entry_benchmark(filename, 3, number, !two_tabs);
 }
 
-boolean full_test_tab_equality() {
+bool full_test_tab_equality() {
 	vector<int> point_Array;
 	vector<int> point_ArrayX;
 	vector<int> point_ArrayY;
