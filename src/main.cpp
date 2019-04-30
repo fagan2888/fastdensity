@@ -278,6 +278,8 @@ static int GLFW_testing_zone(vector<T>tab) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
+	GLenum errors;
+
 	// set up a window
 
 	GLFWwindow* window = glfwCreateWindow(600, 320, "Hello World", NULL, NULL);
@@ -419,8 +421,10 @@ static int GLFW_testing_zone(vector<T>tab) {
 	unsigned int rbo;
 	glGenRenderbuffers(1, &rbo);
 	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, mapSize*2, mapSize*2);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, mapSize*2, mapSize*2);
+	if ((errors = glGetError()) != GL_NO_ERROR) { std::cout << "erros at RenderBufferStorage for framebuffer : " << gluErrorString(errors) << std::endl; }
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT8, GL_RENDERBUFFER, rbo);
+	if ((errors = glGetError()) != GL_NO_ERROR) { std::cout << "erros at glFramebufferRenderbuffer for framebuffer : " << gluErrorString(errors) << std::endl; }
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){ std::cout << "unsuccesfull completion in off screen rendering buffer creation\n" << std::endl; return -1; }
 	else { std::cout << "succesfull completion in off screen rendering buffer creation\n" << std::endl; }
 
@@ -434,12 +438,23 @@ static int GLFW_testing_zone(vector<T>tab) {
 	glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 	//glDrawArrays(GL_POINTS, 0, point_nb*2);
 	//glPointSize(10.0);
-	//glDrawArrays(GL_POINTS, 0, mapSize*mapSize*2);
+	glDrawArrays(GL_POINTS, 0, mapSize*mapSize * 2);
 	glBindVertexArray(0); // unbind the vertex array
 
 	/* Recovering the pixels from the buffer*/
 	unsigned char data[32 * 32 * 1];
 	glReadPixels(0, 0, mapSize, mapSize, GL_RED, GL_UNSIGNED_INT, data);
+
+	// display the result of off rendering
+	vector<unsigned int> temp(32 * 32 * 1);
+	//unsigned int conversion = 4294967295; // 2^32-1
+	for (int j = 0; j < mapSize; j++) {
+		for (int i = 0; i < mapSize; i++) {
+			temp[(mapSize - 1 - j)*mapSize + i] = data[j*mapSize + i];
+		}
+	}
+	display_2Darray(temp);
+	temp.clear();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDeleteFramebuffers(1, &fbo);
@@ -454,9 +469,9 @@ static int GLFW_testing_zone(vector<T>tab) {
 		// draw
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-		glPointSize(10.0);
+		//glPointSize(10.0);
 		//glDrawArrays(GL_POINTS, 0, point_nb*2);
-		glDrawArrays(GL_POINTS, 0, mapSize*mapSize*2);
+		glDrawArrays(GL_POINTS, 0, mapSize*mapSize * 2); //mapSize*mapSize*2
 		glBindVertexArray(0); // unbind the vertex array
 
 		// Swap front and back buffers
@@ -470,15 +485,6 @@ static int GLFW_testing_zone(vector<T>tab) {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glfwTerminate();
-
-	// display the result of off rendering
-	vector<unsigned int> temp (32 * 32 * 1);
-	unsigned int conversion = 4294967295; // 2^32-1
-	for (int j = 0; j < mapSize*mapSize; j++) {
-		temp[j] = data[j];
-	}
-	display_2Darray(temp);
-	temp.clear();
 	return 0;
 }
 
