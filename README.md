@@ -48,7 +48,7 @@ A step by step series of instructions that tell you how to get a development env
 		During the "configure" operation, you'll have to manually point where your libraries and include files are 
 		(don't worry, if you're using the GUI we showed it up)
  5. build the programme, then before launching it, in "../build/src/release" copy all the .lib and .dll files from the libraries previously installed, and remimaps.vs & remimaps.fs.
- 6. Execute the programme. A .csv file called "bench_YYYY-MM-DD_HH-MM-SS" (where YYYY-MM-DD_HH-MM-SS represent the actual date and time) should have been generated in "../build/src", this file is the result of the run.
+ 6. Execute the programme, selectiing main.exe as the solution to run. A .csv file called "bench_YYYY-MM-DD_HH-MM-SS" (where YYYY-MM-DD_HH-MM-SS represent the actual date and time) should have been generated in "../build/src", this file is the result of the run.
 
 ## Autors
 * Jean-Daniel Fekete ( [Homepage](https://www.aviz.fr/~fekete/) )- Leader of the [INRIA](https://www.inria.fr/) Project Team [AVIZ](https://www.aviz.fr/)
