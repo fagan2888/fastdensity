@@ -26,11 +26,11 @@ using namespace std;
 
 /* flobal vars */
 
-unsigned int point_nb = 1000000;
+unsigned int point_nb = 25000000;
 unsigned int seed = 5;
 unsigned int width = 1000;
 unsigned int height = 600;
-unsigned int mapSize = 32;
+unsigned int mapSize = 256;
 double stddev = 5.68;
 
 
@@ -559,6 +559,20 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 			generation = "1";
 		}
 
+		if (entry_type == 3) {
+			entry_name = "GPU_densityMap";
+			std::cout << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << 0 << endl;
+			file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << 0 << "\n";
+
+			if (nb == number - 1) {
+				std::cout << "\n" << "Mean_On_" << to_string(number) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << totalTime << endl;
+				file_pointer << "\n" << "Mean_On_" << to_string(number) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << totalTime << "\n" << "\n";
+
+				file_pointer.close();
+			}
+			break;
+		}
+
 		//determining the min X & Y, the max X & Y
 		int maxY = point_Array[0], maxX = point_Array[0], minY = point_Array[0], minX = point_Array[0];
 		for (unsigned int i = 0; i < point_nb * 2; i += 2) {
@@ -585,7 +599,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 					auto end = chrono::steady_clock::now();
 					auto diff = end - start;
 					auto elapsed_time = chrono::duration <long, nano>(diff).count();
-					totalTime += elapsed_time;
+					totalTime = totalTime + elapsed_time / number;
 					//Insert data to file filename
 					std::cout << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << endl;
 					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << "\n";
@@ -596,7 +610,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 					auto end = chrono::steady_clock::now();
 					auto diff = end - start;
 					auto elapsed_time = chrono::duration <long, nano>(diff).count();
-					totalTime += elapsed_time;
+					totalTime = totalTime + elapsed_time / number;
 					//Insert data to file filename
 					std::cout << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << endl;
 					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << "\n";
@@ -611,7 +625,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 					auto end = chrono::steady_clock::now();
 					auto diff = end - start;
 					auto elapsed_time = chrono::duration <long, nano>(diff).count();
-					totalTime += elapsed_time;
+					totalTime = totalTime + elapsed_time / number;
 					//Insert data to file filename
 					std::cout << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << endl;
 					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << "\n";
@@ -622,7 +636,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 					auto end = chrono::steady_clock::now();
 					auto diff = end - start;
 					auto elapsed_time = chrono::duration <long, nano>(diff).count();
-					totalTime += elapsed_time;
+					totalTime = totalTime + elapsed_time / number;
 					//Insert data to file filename
 					std::cout << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << endl;
 					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << "\n";
@@ -637,7 +651,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 					auto end = chrono::steady_clock::now();
 					auto diff = end - start;
 					auto elapsed_time = chrono::duration <long, nano>(diff).count();
-					totalTime += elapsed_time;
+					totalTime = totalTime + elapsed_time / number;
 					//Insert data to file filename
 					std::cout << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << endl;
 					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << "\n";
@@ -648,7 +662,7 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 					auto end = chrono::steady_clock::now();
 					auto diff = end - start;
 					auto elapsed_time = chrono::duration <long, nano>(diff).count();
-					totalTime += elapsed_time;
+					totalTime = totalTime + elapsed_time / number;
 					//Insert data to file filename
 					std::cout << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << endl;
 					file_pointer << entry_name << to_string(nb) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << elapsed_time << "\n";
@@ -658,8 +672,6 @@ static void one_entry_benchmark(string filename, unsigned int entry_type, unsign
 		//uncomment this if you want to display the generated density map on the shell
 		//display_2Darray(densityMap);
 	}
-
-	totalTime = totalTime / number;
 
 	std::cout << "\n" << "Mean_On_" << to_string(number) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << totalTime << endl;
 	file_pointer << "\n" << "Mean_On_" << to_string(number) << ", " << point_nb << ", " << seed << ", " << stddev << ", " << width << ", " << height << ", " << "generation" << generation << ", " << mapSize << ", " << totalTime << "\n" << "\n";
@@ -756,10 +768,10 @@ static void create_Benchmark(string filename, unsigned int number, bool two_tabs
 
 	file_pointer.close();
 
-	/* launch every entry */
-	one_entry_benchmark(filename, 1, number, two_tabs);
+	/* launch every entry, only on a simple array, which provide the same result, but much faster (better memory acces I suppose) */
+	/*one_entry_benchmark(filename, 1, number, two_tabs);
 	one_entry_benchmark(filename, 2, number, two_tabs);
-	one_entry_benchmark(filename, 3, number, two_tabs);
+	one_entry_benchmark(filename, 3, number, two_tabs);*/
 	one_entry_benchmark(filename, 1, number, !two_tabs);
 	one_entry_benchmark(filename, 2, number, !two_tabs);
 	one_entry_benchmark(filename, 3, number, !two_tabs);
@@ -849,7 +861,7 @@ int main() {
   stringstream ss;
   ss << "bench_" << return_current_time_and_date_as_string() << ".csv";
   string filename = ss.str();
-  create_Benchmark(filename, 100);
+  create_Benchmark(filename, 10);
   
   /* opengl and GLFW tests */
   //if (GLFW_testing_zone(generation_2()) != 0) { cout << "problems with GLFW stuff" << endl; return -1; }
