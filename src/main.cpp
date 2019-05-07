@@ -849,10 +849,10 @@ int main() {
   stringstream ss;
   ss << "bench_" << return_current_time_and_date_as_string() << ".csv";
   string filename = ss.str();
-  //create_Benchmark(filename, 100);
+  create_Benchmark(filename, 100);
   
   /* opengl and GLFW tests */
-  if (GLFW_testing_zone(generation_2()) != 0) { cout << "problems with GLFW stuff" << endl; return -1; }
+  //if (GLFW_testing_zone(generation_2()) != 0) { cout << "problems with GLFW stuff" << endl; return -1; }
 
   return 0;
 }
