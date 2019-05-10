@@ -24,7 +24,7 @@
 
 using namespace std;
 
-/* flobal vars */
+/* global vars */
 
 unsigned int point_nb = 25000000;
 unsigned int seed = 5;
@@ -204,6 +204,33 @@ vector<unsigned int> compute_densityMap_CPU_multThread_1Tab(vector<T>tab, T maxX
 		densityMap[tab[i] * mapSize + tab[i+1]]++;
 	}
 	return densityMap;
+}
+
+template< typename T >
+int compute_densityMap_1s_testing (vector<T>tab, T maxX, T minX, T maxY, T minY,int points, int thread) {
+	vector<unsigned int> densityMap(36*36);
+	vector<int> tab_temp(points, -1);
+	T Xrange = maxX - minX;
+	T Yrange = maxY - minY;
+	int res = 0;
+
+	omp_set_num_threads(thread);
+	auto start = chrono::steady_clock::now();
+	for (int i = 0; i < points * 2; i += 2) {
+		tab_temp[i] = tab[i] + minX * (-1);
+		tab_temp[i + 1] = tab[i + 1] + minY * (-1);
+		tab_temp[i] = round(((double)tab[i] / (double)Xrange) * (36 - 1));
+		tab_temp[i + 1] = round(((double)tab[i + 1] / (double)Yrange) * (36 - 1));
+		auto end = chrono::steady_clock::now();
+		auto diff = end - start;
+		auto elapsed_time = chrono::duration <long, nano>(diff).count();
+		if (elapsed_time >= 900000000) { break; }
+	}
+
+	for (unsigned int i = 0; i < points * 2; i += 2) {
+		if (tab_temp[i] != -1 && tab_temp[i + 1] != -1) { res++; }
+	}
+	return res;
 }
 
 /*
@@ -828,6 +855,39 @@ bool full_test_tab_equality() {
 	return true;
 }
 
+static void test_1s_generation() {
+	int points = 90000000;
+	//normal distribution construction
+	//when using n<4 as seed, it generate some patern of 0, don't know why. But work perfectly fine with other seed values
+	default_random_engine generator(1); //seed of the rng && should reset the seed at it's starting point.
+	normal_distribution<double> distribution(0.0, stddev);
+
+	vector<int> point_Array;
+
+	/* array generation */
+	for (unsigned int i = 0; i < points; i++) {
+		point_Array.push_back(ceil(distribution(generator)));
+		point_Array.push_back(ceil(distribution(generator)));
+	}
+
+	//determining the min X & Y, the max X & Y
+	int maxY = point_Array[0], maxX = point_Array[0], minY = point_Array[0], minX = point_Array[0];
+	for (unsigned int i = 0; i < points * 2; i += 2) {
+		if (point_Array[i] < minX) { minX = point_Array[i]; }
+		else if (point_Array[i] > maxX) { maxX = point_Array[i]; }
+		if (point_Array[i + 1] < minY) { minY = point_Array[i + 1]; }
+		else if (point_Array[i + 1] > maxY) { maxY = point_Array[i + 1]; }
+	}
+
+	int number = compute_densityMap_1s_testing(point_Array, maxX, minX, maxY, minY, points, 1);
+	std::cout << "nombre depoints traité en 1 secondes par 1 threads : " << number << std::endl;
+	number = compute_densityMap_1s_testing(point_Array, maxX, minX, maxY, minY, points, 2);
+	std::cout << "nombre depoints traité en 1 secondes par 2 threads : " << number << std::endl;
+	number = compute_densityMap_1s_testing(point_Array, maxX, minX, maxY, minY, points, 3);
+	std::cout << "nombre depoints traité en 1 secondes par 3 threads : " << number << std::endl;
+	number = compute_densityMap_1s_testing(point_Array, maxX, minX, maxY, minY, points, 4);
+	std::cout << "nombre depoints traité en 1 secondes par 4 threads : " << number << std::endl;
+}
 
 int main() {
   FFastDensity ff(256,256);
@@ -865,6 +925,8 @@ int main() {
   
   /* opengl and GLFW tests */
   //if (GLFW_testing_zone(generation_2()) != 0) { cout << "problems with GLFW stuff" << endl; return -1; }
+
+  //test_1s_generation();
 
   return 0;
 }
